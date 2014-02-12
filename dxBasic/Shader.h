@@ -36,7 +36,7 @@ public:
 		
 	bool init(ID3D11Device* device, HWND hwnd);
 	void shutdown();
-	void render(ID3D11DeviceContext*, int, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, ID3D11ShaderResourceView*, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
+	void render(ID3D11DeviceContext*, int, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, ID3D11ShaderResourceView**, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
 		
 private:
 	ID3D11VertexShader* vertexShader_;
@@ -66,7 +66,7 @@ private:
 	bool initShader(ID3D11Device*, HWND, WCHAR*, WCHAR* );
 	void shutdownShader();
 	void outputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR* );
-	bool setShaderParameters(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, ID3D11ShaderResourceView*, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
+	bool setShaderParameters(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, ID3D11ShaderResourceView**, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
 	void renderShader(ID3D11DeviceContext*, int);
 
 	struct MatrixBufferType

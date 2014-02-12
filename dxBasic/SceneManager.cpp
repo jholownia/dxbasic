@@ -64,15 +64,16 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 
 	// Create camera
 	camera_ = new Camera;
-	camera_->setPosition(0.0f, 2.0f, -5.0f);
-	camera_->setRotation(20.0f, 0.0f, 0.0f);
+	// camera_->setPosition(0.0f, 2.0f, -5.0f);
+	// camera_->setRotation(20.0f, 0.0f, 0.0f);
+	camera_->setPosition(0.0f, 0.0f, -5.0f);
 	camera_->render();
 	D3DXMATRIX baseViewMatrix;
 	camera_->getViewMatrix(baseViewMatrix);
 
 	// Create model
 	model_ = new Object3D;
-	result = model_->init(d3d_->getDevice(), "data/ball2.obj", L"data/earth_4k.jpg");
+	result = model_->init(d3d_->getDevice(), "data/ball2.obj", L"data/earth_4k.jpg", L"data/earth_normal.png", L"data/earth_specular.jpg");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize Model.", L"Error", MB_OK);
@@ -93,16 +94,17 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	// Light
 	light_ = new Light;
 	light_->setAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
-	light_->setDiffuseColor(1.0f, 1.0f, 0.7f, 1.0f);	
+	light_->setDiffuseColor(1.0f, 1.0f, 0.8f, 1.0f);	
 	// light_->setDirection(-1.0f, 0.7f, 1.5f);
 	
-	light_->setDirection(-1.0f, -1.0f, 1.0f);
+	// light_->setDirection(-1.0f, -1.0f, 1.0f);
+	light_->setDirection(-0.8f, -0.5f, 1.0f);
 	light_->setLookAt(0.0f, 0.0f, 0.0f);	
 	light_->generateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 	
-	light_->setSpecularColor(1.0f, 1.0f, 0.8f, 1.0f);
-	light_->setSpecularPower(44.0f);
-	light_->setSpecularIntensity(0.7f);
+	light_->setSpecularColor(1.0f, 1.0f, 0.7f, 1.0f);
+	light_->setSpecularPower(26.0f);
+	light_->setSpecularIntensity(0.6f);
 	
 	return true;
 }
@@ -229,7 +231,7 @@ void SceneManager::renderScene()
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &rotationMatrix);
 
 	model_->render(d3d_->getDeviceContext());
-	shader_->render(d3d_->getDeviceContext(), model_->getIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model_->getTexture(), light_->getDirection(), light_->getAmbientColor(), light_->getDiffuseColor(), camera_->getPosition(), light_->getSpecularColor(), light_->getSpecularPower(), light_->getSpecularIntensity());
+	shader_->render(d3d_->getDeviceContext(), model_->getIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model_->getTexturesArray(), light_->getDirection(), light_->getAmbientColor(), light_->getDiffuseColor(), camera_->getPosition(), light_->getSpecularColor(), light_->getSpecularPower(), light_->getSpecularIntensity());
 
 	// End scene
 	d3d_->endScene();

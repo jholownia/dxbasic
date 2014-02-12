@@ -80,7 +80,7 @@
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureArray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
@@ -96,7 +96,7 @@
     <ClInclude Include="Position.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureArray.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="phong.fx">
