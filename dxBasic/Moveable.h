@@ -19,7 +19,7 @@
  
  Moveable
 
- Provides a common interface for all moveable objects.
+ Stores position and rotation of a moveable object.
  
 ================================
 */
@@ -36,11 +36,11 @@ public:
 	D3DXVECTOR3 getRotation() const;
 
 protected:
-	float x_;
-	float y_;
-	float z_;
-	float rx_;
-	float ry_;
-	float rz_;
+	float m_x;
+	float m_y;
+	float m_z;
+	float m_rx;
+	float m_ry;
+	float m_rz;
 };
 

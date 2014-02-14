@@ -26,8 +26,8 @@
 class Camera : public Moveable
 {
 public:
-	Camera(void);
-	~Camera(void);	
+	Camera();
+	~Camera();	
 
 	void render();
 	void getViewMatrix(D3DXMATRIX& viewMatrix);
@@ -36,7 +36,7 @@ public:
 	D3DXMATRIX getReflectionViewMatrix();
 
 protected:	
-	D3DXMATRIX viewMatrix_;
-	D3DXMATRIX reflectionViewMatrix_;
+	D3DXMATRIX m_viewMatrix;
+	D3DXMATRIX m_reflectionMatrix;
 };
 

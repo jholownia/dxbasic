@@ -17,7 +17,7 @@
  Camera::Camera
 ================
 */
-Camera::Camera(void)
+Camera::Camera()
 {
 
 }
@@ -27,7 +27,7 @@ Camera::Camera(void)
  Camera::~Camera
 ================
 */
-Camera::~Camera(void)
+Camera::~Camera()
 {
 
 }
@@ -50,31 +50,18 @@ void Camera::render()
 	up.y = 1.0f;
 	up.z = 0.0f;
 
-	position.x = x_;
-	position.y = y_;
-	position.z = z_;
-	
-	/*
-	// Calculate the rotation in radians.
-	float radians = ry_ * 0.0174532925f;
-
-	// Setup where the camera is looking.
-	lookAt.x = sinf(radians) + x_;
-	lookAt.y = y_;
-	lookAt.z = cosf(radians) + z_;
-
-	// Create the view matrix from the three vectors.
-	D3DXMatrixLookAtLH(&viewMatrix_, &position, &lookAt, &up);
-	*/
-		
+	position.x = m_x;
+	position.y = m_y;
+	position.z = m_z;
+			
 	lookAt.x = 0.0f;
 	lookAt.y = 0.0f;
 	lookAt.z = 1.0f;
 
 	// radians
-	float pitch = rx_ * 0.0174532925f;
-	float yaw = ry_ * 0.0174532925f;
-	float roll = rz_ * 0.0174532925f;
+	float pitch = m_rx * 0.0174532925f;
+	float yaw = m_ry * 0.0174532925f;
+	float roll = m_rz * 0.0174532925f;
 
 	D3DXMATRIX rotationMatrix;
 	D3DXMatrixRotationYawPitchRoll(&rotationMatrix, yaw, pitch, roll);
@@ -86,7 +73,7 @@ void Camera::render()
 	lookAt = position + lookAt;
 
 	// Create view matrix
-	D3DXMatrixLookAtLH(&viewMatrix_, &position, &lookAt, &up);
+	D3DXMatrixLookAtLH(&m_viewMatrix, &position, &lookAt, &up);
 	
 }
 
@@ -97,7 +84,7 @@ void Camera::render()
 */
 void Camera::getViewMatrix( D3DXMATRIX& viewMatrix )
 {
-	viewMatrix = viewMatrix_;
+	viewMatrix = m_viewMatrix;
 }
 
 /*
@@ -119,32 +106,21 @@ void Camera::renderReflection(float height)
 	up.z = 0.0f;
 
 	// Setup camera position with inverted Y
-	position.x = x_;
-	position.y = -y_ + (height * 2.0f);
-	position.z = z_;
+	position.x = m_x;
+	position.y = -m_y + (height * 2.0f);
+	position.z = m_z;
 
 	
 	// Calculate rotation
-	float radians = ry_ * 0.0174532925f;
+	float radians = m_ry * 0.0174532925f;
 
 	// Where the camera is looking
-	lookAt.x = sinf(radians) + x_;
+	lookAt.x = sinf(radians) + m_x;
 	lookAt.y = position.y;
-	lookAt.z = cosf(radians) + z_;
-
-
-	// --
-
-
-
-
-
-
-
-	// --
-
+	lookAt.z = cosf(radians) + m_z;
+	
 	// Create reflection matrix
-	D3DXMatrixLookAtLH(&reflectionViewMatrix_, &position, &lookAt, &up);	
+	D3DXMatrixLookAtLH(&m_reflectionMatrix, &position, &lookAt, &up);	
 }
 
 /*
@@ -154,5 +130,5 @@ void Camera::renderReflection(float height)
 */
 D3DXMATRIX Camera::getReflectionViewMatrix()
 {
-	return reflectionViewMatrix_;
+	return m_reflectionMatrix;
 }

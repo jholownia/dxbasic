@@ -18,15 +18,15 @@
 ================
 */
 D3DManager::D3DManager(void) :
-	swapChain_                (NULL),
-	device_                   (NULL),
-	deviceContext_            (NULL),
-	renderTargetView_         (NULL),
-	depthStencilBuffer_       (NULL),
-	depthStencilState_        (NULL),
-	depthStencilView_         (NULL),
-	rasterizerState_          (NULL),
-	depthDisableStencilState_ (NULL)
+	m_swapChain                (NULL),
+	m_device                   (NULL),
+	m_deviceContext            (NULL),
+	m_renderTargetView         (NULL),
+	m_depthStencilBuffer       (NULL),
+	m_depthStencilState        (NULL),
+	m_depthStencilView         (NULL),
+	m_rasterizerState          (NULL),
+	m_disableDepthStencilState (NULL)
 {
 
 }
@@ -78,7 +78,7 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 
 	// Set the vsync setting
-	vsyncEnabled_ = vsync;
+	m_vsyncEnabled = vsync;
 
 	// Get refresh rates and find a correct one to use
 	// ----------------------------------------------------------------------
@@ -140,14 +140,17 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	}
 
 	// Store memory in megabytes
-	gpuMemory_ = (int) (adapterDesc.DedicatedVideoMemory / 1024 / 1024);
+	m_gpuMemory = (int) (adapterDesc.DedicatedVideoMemory / 1024 / 1024);
 
 	// Get GPU name
-	error = wcstombs_s(&stringLength, gpuDescription_, 128, adapterDesc.Description, 128);
+	char gpuDescription[128];
+	error = wcstombs_s(&stringLength, gpuDescription, 128, adapterDesc.Description, 128);
 	if (error != 0)
 	{
 		return false;
 	}
+
+	m_gpuDescription = std::string(gpuDescription);
 
 	// Clean up
 	delete[] displayModeList;
@@ -175,7 +178,7 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	swapChainDesc.BufferDesc.Height = screenHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	if (vsyncEnabled_)
+	if (m_vsyncEnabled)
 	{
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = numerator;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = denominator;
@@ -212,20 +215,20 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// Finally create the device (note it's directX version specific)
-	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, &swapChain_, &device_, NULL, &deviceContext_);
+	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, &m_swapChain, &m_device, NULL, &m_deviceContext);
 	if (FAILED(result))
 	{
 		return false;		
 	}
 
 	// Back buffer
-	result = swapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*) &backBufferPtr);
+	result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*) &backBufferPtr);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	result = device_->CreateRenderTargetView(backBufferPtr, NULL, &renderTargetView_);
+	result = m_device->CreateRenderTargetView(backBufferPtr, NULL, &m_renderTargetView);
 	if (FAILED(result))
 	{
 		return false;
@@ -253,7 +256,7 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
-	result = device_->CreateTexture2D(&depthBufferDesc, NULL, &depthStencilBuffer_);
+	result = m_device->CreateTexture2D(&depthBufferDesc, NULL, &m_depthStencilBuffer);
 	if (FAILED(result))
 	{
 		return false;
@@ -286,13 +289,13 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// Create depth stencil state
-	result = device_->CreateDepthStencilState(&depthStencilDesc, &depthStencilState_);
+	result = m_device->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	deviceContext_->OMSetDepthStencilState(depthStencilState_, 1);
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState, 1);
 
 	// Initialize depth stencil view
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
@@ -302,10 +305,10 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	// Create depth stencil view
-	result = device_->CreateDepthStencilView(depthStencilBuffer_, &depthStencilViewDesc, &depthStencilView_);
+	result = m_device->CreateDepthStencilView(m_depthStencilBuffer, &depthStencilViewDesc, &m_depthStencilView);
 
 	// Bind render target view
-	deviceContext_->OMSetRenderTargets(1, &renderTargetView_, depthStencilView_);
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 
 	// -- Rasterizer state
 
@@ -321,38 +324,39 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	rasterizerDesc.ScissorEnable = false;
 	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
-	result = device_->CreateRasterizerState(&rasterizerDesc, &rasterizerState_);
+	result = m_device->CreateRasterizerState(&rasterizerDesc, &m_rasterizerState);
 	if(FAILED(result))
 	{
 		return false;
 	}
 
-	deviceContext_->RSSetState(rasterizerState_);
+	m_deviceContext->RSSetState(m_rasterizerState);
 
 	// Setup the viewport
-	viewport_.Width = screenWidth;
-	viewport_.Height = screenHeight;
-	viewport_.MinDepth = 0.0f;
-	viewport_.MaxDepth = 1.0f;
-	viewport_.TopLeftX = 0;
-	viewport_.TopLeftY = 0;
+	D3D11_VIEWPORT viewport;
+	viewport.Width = screenWidth;
+	viewport.Height = screenHeight;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
 
 	// Create the viewport.
-	deviceContext_->RSSetViewports(1, &viewport_);
+	m_deviceContext->RSSetViewports(1, &viewport);
 
 	// Setup projection matrix
 	fov = (float) D3DX_PI / 4.0f;
 	aspectRatio = (float) screenWidth / (float) screenHeight;
 
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix_, fov, aspectRatio, screenNear, screenDepth);
+	D3DXMatrixPerspectiveFovLH(&m_projectionMatrix, fov, aspectRatio, screenNear, screenDepth);
 
 	// Initialize world matrix
-	D3DXMatrixIdentity(&worldMatrix_);
+	D3DXMatrixIdentity(&m_worldMatrix);
 
 	// Create camera here
 
 	// Create an orthographic projection matrix for 2D rendering
-	D3DXMatrixOrthoLH(&orthoMatrix_, (float) screenWidth, (float) screenHeight, screenNear, screenDepth);
+	D3DXMatrixOrthoLH(&m_orthoMatrix, (float) screenWidth, (float) screenHeight, screenNear, screenDepth);
 
 	// Depth stencil stuff
 	// ----------------------------------------------------------------------------------------------
@@ -376,7 +380,7 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// Create the state using the device
-	result = device_->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisableStencilState_);
+	result = m_device->CreateDepthStencilState(&depthDisabledStencilDesc, &m_disableDepthStencilState);
 	if (FAILED(result))
 	{
 		return false;
@@ -392,63 +396,63 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 */
 void D3DManager::shutdown()
 {
-	if (swapChain_)
+	if (m_swapChain)
 	{
-		swapChain_->SetFullscreenState(false, NULL);
+		m_swapChain->SetFullscreenState(false, NULL);
 	}
 
-	if (depthDisableStencilState_)
+	if (m_disableDepthStencilState)
 	{
-		depthDisableStencilState_->Release();
-		depthDisableStencilState_ = NULL;
+		m_disableDepthStencilState->Release();
+		m_disableDepthStencilState = NULL;
 	}
 
-	if (rasterizerState_)
+	if (m_rasterizerState)
 	{
-		rasterizerState_->Release();
-		rasterizerState_ = NULL;
+		m_rasterizerState->Release();
+		m_rasterizerState = NULL;
 	}
 
-	if (depthStencilView_)
+	if (m_depthStencilView)
 	{
-		depthStencilView_->Release();
-		depthStencilView_ = NULL;
+		m_depthStencilView->Release();
+		m_depthStencilView = NULL;
 	}
 
-	if (depthStencilState_)
+	if (m_depthStencilState)
 	{
-		depthStencilState_->Release();
-		depthStencilState_ = NULL;
+		m_depthStencilState->Release();
+		m_depthStencilState = NULL;
 	}
 
-	if (depthStencilBuffer_)
+	if (m_depthStencilBuffer)
 	{
-		depthStencilBuffer_->Release();
-		depthStencilBuffer_ = NULL;
+		m_depthStencilBuffer->Release();
+		m_depthStencilBuffer = NULL;
 	}
 
-	if (renderTargetView_)
+	if (m_renderTargetView)
 	{
-		renderTargetView_->Release();
-		renderTargetView_ = NULL;
+		m_renderTargetView->Release();
+		m_renderTargetView = NULL;
 	}
 
-	if (swapChain_)
+	if (m_swapChain)
 	{
-		swapChain_->Release();
-		swapChain_ = NULL;
+		m_swapChain->Release();
+		m_swapChain = NULL;
 	}
 
-	if (deviceContext_)
+	if (m_deviceContext)
 	{
-		deviceContext_->Release();
-		deviceContext_ = NULL;
+		m_deviceContext->Release();
+		m_deviceContext = NULL;
 	}
 
-	if (device_)
+	if (m_device)
 	{
-		device_->Release();
-		device_ = NULL;
+		m_device->Release();
+		m_device = NULL;
 	}
 }
 
@@ -468,10 +472,10 @@ void D3DManager::beginScene( float red, float green, float blue, float alpha )
 	color[3] = alpha;
 
 	// Clear the back buffer
-	deviceContext_->ClearRenderTargetView(renderTargetView_, color);
+	m_deviceContext->ClearRenderTargetView(m_renderTargetView, color);
 
 	// Clear the depth buffer
-	deviceContext_->ClearDepthStencilView(depthStencilView_, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 /*
@@ -484,13 +488,13 @@ void D3DManager::beginScene( float red, float green, float blue, float alpha )
 void D3DManager::endScene()
 {
 	// Present the back buffer to the screen when the rendering is complete
-	if (vsyncEnabled_)
+	if (m_vsyncEnabled)
 	{
-		swapChain_->Present(1,0);
+		m_swapChain->Present(1,0);
 	}
 	else
 	{
-		swapChain_->Present(0,0);  // present asap
+		m_swapChain->Present(0,0);  // present asap
 	}
 }
 
@@ -501,12 +505,12 @@ void D3DManager::endScene()
 */
 ID3D11Device* D3DManager::getDevice()
 {
-	return device_;
+	return m_device;
 }
 
 ID3D11DeviceContext* D3DManager::getDeviceContext()
 {
-	return deviceContext_;
+	return m_deviceContext;
 }
 
 /*
@@ -516,7 +520,7 @@ ID3D11DeviceContext* D3DManager::getDeviceContext()
 */
 void D3DManager::getProjectionMatrix( D3DXMATRIX& projectionMatrix )
 {
-	projectionMatrix = projectionMatrix_;
+	projectionMatrix = m_projectionMatrix;
 }
 
 /*
@@ -526,7 +530,7 @@ void D3DManager::getProjectionMatrix( D3DXMATRIX& projectionMatrix )
 */
 void D3DManager::getWorldMatrix( D3DXMATRIX& worldMatrix )
 {
-	worldMatrix = worldMatrix_;
+	worldMatrix = m_worldMatrix;
 }
 
 /*
@@ -536,7 +540,7 @@ void D3DManager::getWorldMatrix( D3DXMATRIX& worldMatrix )
 */
 void D3DManager::getOrthoMatrix( D3DXMATRIX& orthoMatrix )
 {
-	orthoMatrix = orthoMatrix_;
+	orthoMatrix = m_orthoMatrix;
 }
 
 /*
@@ -544,10 +548,10 @@ void D3DManager::getOrthoMatrix( D3DXMATRIX& orthoMatrix )
  D3DManager::getGpuInfo
 ================
 */
-void D3DManager::getGpuInfo( char* gpuName, int& memory )
+void D3DManager::getGpuInfo( std::string& gpuName, int& memory )
 {
-	strcpy_s(gpuName, 128, gpuDescription_);
-	memory = gpuMemory_;
+	gpuName = m_gpuDescription;
+	memory = m_gpuMemory;
 }
 
 /*
@@ -557,7 +561,7 @@ void D3DManager::getGpuInfo( char* gpuName, int& memory )
 */
 void D3DManager::turnZBufferOn()
 {
-	deviceContext_->OMSetDepthStencilState(depthStencilState_, 1);
+	m_deviceContext->OMSetDepthStencilState(m_depthStencilState, 1);
 }
 
 /*
@@ -567,7 +571,7 @@ void D3DManager::turnZBufferOn()
 */
 void D3DManager::turnZBufferOff()
 {
-	deviceContext_->OMSetDepthStencilState(depthDisableStencilState_, 1);
+	m_deviceContext->OMSetDepthStencilState(m_disableDepthStencilState, 1);
 }
 
 /*
@@ -577,7 +581,7 @@ void D3DManager::turnZBufferOff()
 */
 ID3D11DepthStencilView* D3DManager::getDepthStencilView()
 {
-	return depthStencilView_;
+	return m_depthStencilView;
 }
 
 /*
@@ -587,10 +591,18 @@ ID3D11DepthStencilView* D3DManager::getDepthStencilView()
 */
 void D3DManager::setBackBufferRenderTarget()
 {
-	deviceContext_->OMSetRenderTargets(1, &renderTargetView_, depthStencilView_);
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 }
 
-void D3DManager::resetViewport()
+void D3DManager::resetViewport(float width, float height)
 {
-	deviceContext_->RSSetViewports(1, &viewport_);
+	D3D11_VIEWPORT viewport;
+	viewport.Width = width;
+	viewport.Height = height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	
+	m_deviceContext->RSSetViewports(1, &viewport);
 }

@@ -188,7 +188,7 @@ bool App::frame()
 {
 	bool result;
 
-	result = input_->frame();
+	result = input_->update();
 	if (!result)
 	{
 		return false;

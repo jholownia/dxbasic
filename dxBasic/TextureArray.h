@@ -13,6 +13,9 @@
 
 #include <D3D11.h>
 #include <D3DX11.h>
+
+#include <string>
+
 /*
 ================================
  
@@ -28,7 +31,7 @@ public:
 	TextureArray(void);
 	~TextureArray(void);
 
-	bool init(ID3D11Device* device, WCHAR* filename1, WCHAR* filename2, WCHAR* filename3);
+	bool init(ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3);
 	void shutdown();
 
 	ID3D11ShaderResourceView** getTextureArray();

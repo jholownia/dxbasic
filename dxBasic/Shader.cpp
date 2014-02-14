@@ -148,7 +148,7 @@ bool Shader::initShader( ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCH
 	}
 		
 	// Now setup the layout of the data that goes into the shader.
-	// This setup needs to match the VertexType structure in the Object3D class and in the shader.
+	// This setup needs to match the VertexType structure in the Model class and in the shader.
 	polygonLayout[0].SemanticName = "POSITION";
 	polygonLayout[0].SemanticIndex = 0;
 	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;

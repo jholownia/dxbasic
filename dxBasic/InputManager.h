@@ -38,7 +38,7 @@ public:
 
 	bool init(HINSTANCE, HWND, int, int);
 	void shutdown();
-	bool frame();
+	bool update();
 
 	// Convenience methods
 	bool isEscPressed();

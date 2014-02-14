@@ -24,19 +24,19 @@
 class Light
 {
 public:
-	Light(void);
-	virtual ~Light(void);
+	Light();
+	virtual ~Light();
 
-	void setAmbientColor(float, float, float, float);
-	void setDiffuseColor(float, float, float, float);		
-	void setPosition(float, float, float);
-	void setLookAt(float, float, float);
+	void setAmbientColor(float red, float green, float blue, float alpha);
+	void setDiffuseColor(float red, float green, float blue, float alpha);		
+	void setPosition(float x, float y, float z);
+	void setLookAt(float x, float y, float z);
 		
-	void setDirection(float, float, float);
+	void setDirection(float x, float y, float z);
 
-	void setSpecularColor(float, float, float, float);
-	void setSpecularPower(float);
-	void setSpecularIntensity(float);
+	void setSpecularColor(float red, float green, float blue, float alpha);
+	void setSpecularPower(float power);
+	void setSpecularIntensity(float intensity);
 
 	D3DXVECTOR4 getAmbientColor() const;
 	D3DXVECTOR4 getDiffuseColor() const;
@@ -49,23 +49,23 @@ public:
 	float getSpecularIntensity() const;
 
 	void generateViewMatrix();
-	void generateProjectionMatrix(float, float);
+	void generateProjectionMatrix(float screenDepth, float screenNear);
 
 	void getViewMatrix(D3DXMATRIX&);
 	void getProjectionMatrix(D3DXMATRIX&);
 
 private:
-	D3DXVECTOR4 ambientColor_;
-	D3DXVECTOR4 diffuseColor_;
-	D3DXVECTOR3 position_;
-	D3DXVECTOR3 lookAt_;
-	D3DXMATRIX viewMatrix_;
-	D3DXMATRIX projectionMatrix_;
+	D3DXVECTOR4 m_ambientColor;
+	D3DXVECTOR4 m_diffuseColor;
+	D3DXVECTOR3 m_position;
+	D3DXVECTOR3 m_lookAt;
+	D3DXMATRIX m_viewMatrix;
+	D3DXMATRIX m_projectionMatrix;
 
-	D3DXVECTOR3 direction_;
+	D3DXVECTOR3 m_direction;
 
-	D3DXVECTOR4 specularColor_;
-	float specularPower_;
-	float specularIntensity_;
+	D3DXVECTOR4 m_specularColor;
+	float m_specularPower;
+	float m_specularIntensity;
 };
 

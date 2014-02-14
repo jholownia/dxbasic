@@ -38,7 +38,7 @@ Light::~Light(void)
 */
 void Light::setDiffuseColor( float red, float green, float blue, float alpha )
 {
-	diffuseColor_ = D3DXVECTOR4(red, green, blue, alpha);
+	m_diffuseColor = D3DXVECTOR4(red, green, blue, alpha);
 }
 
 /*
@@ -48,7 +48,7 @@ void Light::setDiffuseColor( float red, float green, float blue, float alpha )
 */
 D3DXVECTOR4 Light::getDiffuseColor() const
 {
-	return diffuseColor_;
+	return m_diffuseColor;
 }
 
 /*
@@ -58,7 +58,7 @@ D3DXVECTOR4 Light::getDiffuseColor() const
 */
 D3DXVECTOR4 Light::getAmbientColor() const
 {
-	return ambientColor_;
+	return m_ambientColor;
 }
 
 /*
@@ -68,25 +68,25 @@ D3DXVECTOR4 Light::getAmbientColor() const
 */
 void Light::setAmbientColor( float red, float green, float blue, float alpha )
 {
-	ambientColor_ = D3DXVECTOR4(red, green, blue, alpha);
+	m_ambientColor = D3DXVECTOR4(red, green, blue, alpha);
 }
 
 void Light::setPosition( float x, float y, float z)
 {
-	position_ = D3DXVECTOR3(x, y, z);
+	m_position = D3DXVECTOR3(x, y, z);
 }
 
 void Light::setLookAt( float x, float y, float z)
 {
-	lookAt_.x = x;
-	lookAt_.y = y;
-	lookAt_.z = z;
+	m_lookAt.x = x;
+	m_lookAt.y = y;
+	m_lookAt.z = z;
 }
 
 void Light::generateViewMatrix()
 {
 	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&viewMatrix_, &position_, &lookAt_, &up);
+	D3DXMatrixLookAtLH(&m_viewMatrix, &m_position, &m_lookAt, &up);
 }
 
 void Light::generateProjectionMatrix(float screenDepth, float screenNear)
@@ -94,62 +94,62 @@ void Light::generateProjectionMatrix(float screenDepth, float screenNear)
 	float fov = (float)D3DX_PI * 0.5f;
 	float screenAspect = 1.0f;
 
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix_, fov, screenAspect, screenNear, screenDepth);
+	D3DXMatrixPerspectiveFovLH(&m_projectionMatrix, fov, screenAspect, screenNear, screenDepth);
 }
 
 void Light::getViewMatrix( D3DXMATRIX& viewMatrix )
 {
-	viewMatrix = viewMatrix_;
+	viewMatrix = m_viewMatrix;
 }
 
 void Light::getProjectionMatrix( D3DXMATRIX& projectionMatrix )
 {
-	projectionMatrix = projectionMatrix_;
+	projectionMatrix = m_projectionMatrix;
 }
 
 D3DXVECTOR3 Light::getPosition() const
 {
-	return position_;
+	return m_position;
 }
 
 void Light::setDirection( float x, float y, float z )
 {
-	direction_ = D3DXVECTOR3(x, y, z);
+	m_direction = D3DXVECTOR3(x, y, z);
 }
 
 D3DXVECTOR3 Light::getDirection() const
 {
-	return direction_;
+	return m_direction;
 }
 
 void Light::setSpecularColor( float red, float green, float blue, float alpha)
 {
-	specularColor_ = D3DXVECTOR4(red, green, blue, alpha);
+	m_specularColor = D3DXVECTOR4(red, green, blue, alpha);
 }
 
 void Light::setSpecularPower( float power )
 {
-	specularPower_ = power;
+	m_specularPower = power;
 }
 
 D3DXVECTOR4 Light::getSpecularColor() const
 {
-	return specularColor_;
+	return m_specularColor;
 }
 
 float Light::getSpecularPower() const
 {
-	return specularPower_;
+	return m_specularPower;
 }
 
 void Light::setSpecularIntensity( float intensity )
 {
-	specularIntensity_ = intensity;
+	m_specularIntensity = intensity;
 }
 
 float Light::getSpecularIntensity() const
 {
-	return specularIntensity_;
+	return m_specularIntensity;
 }
 
 

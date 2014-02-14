@@ -136,7 +136,7 @@ void InputManager::shutdown()
  InputManager::frame
 ================
 */
-bool InputManager::frame()
+bool InputManager::update()
 {
 	bool result;
 

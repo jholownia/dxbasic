@@ -13,6 +13,9 @@
 
 #include "mesh.h"
 
+#include <string>
+#include <vector>
+
 /*
 ================================
  
@@ -25,13 +28,14 @@
 class ObjLoader
 {
 public:
-	ObjLoader(void);
-	~ObjLoader(void);
+	ObjLoader();
+	~ObjLoader();
 
-	bool init(char* filename);
+	bool init(std::string filename);
 	void shutdown();
 	
 	Mesh* createMesh(int& vertexCount);
+	void createMesh(int& vertexCount, std::vector<Mesh>& mesh);
 	
 private:
 	struct Vector
@@ -46,17 +50,17 @@ private:
 		int nIndex1, nIndex2, nIndex3;
 	};
 
-	Vector* vertices_;
-	Vector* texcoords_;
-	Vector* normals_;
-	Face* faces_;
+	Vector* m_vertices;
+	Vector* m_texcoords;
+	Vector* m_normals;
+	Face* m_faces;
 
-	int vertexIndex_;
-	int texcoordIndex_;
-	int normalIndex_;
-	int faceIndex_;
+	int m_vertexIndex;
+	int m_texcoordIndex;
+	int m_normalIndex;
+	int m_faceIndex;
 	
-	bool readFileCounts(char*, int&, int&, int&, int&);
-	bool loadDataStructures(char*, int, int, int, int);
+	bool readFileCounts(std::string, int&, int&, int&, int&);
+	bool loadDataStructures(std::string, int, int, int, int);
 };
 

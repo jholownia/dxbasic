@@ -48,7 +48,7 @@ public:
 private:	
 	D3DManager* d3d_;
 	Camera* camera_;
-	Object3D* model_;
+	Model* model_;
 	Shader* shader_;
 	Light* light_;
 

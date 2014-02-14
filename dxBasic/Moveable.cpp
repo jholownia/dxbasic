@@ -17,12 +17,12 @@
 ================
 */
 Moveable::Moveable(void) :
-	x_  (0.0f),
-	y_  (0.0f),
-	z_  (0.0f),
-	rx_ (0.0f),
-	ry_ (0.0f),
-	rz_ (0.0f)	
+	m_x  (0.0f),
+	m_y  (0.0f),
+	m_z  (0.0f),
+	m_rx (0.0f),
+	m_ry (0.0f),
+	m_rz (0.0f)	
 {
 
 }
@@ -44,9 +44,9 @@ Moveable::~Moveable(void)
 */
 void Moveable::setPosition( float x, float y, float z )
 {
-	x_ = x;
-	y_ = y;
-	z_ = z;
+	m_x = x;
+	m_y = y;
+	m_z = z;
 }
 
 /*
@@ -56,9 +56,9 @@ void Moveable::setPosition( float x, float y, float z )
 */
 void Moveable::setRotation( float rx, float ry, float rz )
 {
-	rx_ = rx;
-	ry_ = ry;
-	rz_ = rz;
+	m_rx = rx;
+	m_ry = ry;
+	m_rz = rz;
 }
 
 /*
@@ -68,7 +68,7 @@ void Moveable::setRotation( float rx, float ry, float rz )
 */
 D3DXVECTOR3 Moveable::getPosition() const
 {
-	return D3DXVECTOR3(x_, y_, z_);
+	return D3DXVECTOR3(m_x, m_y, m_z);
 }
 
 /*
@@ -78,5 +78,5 @@ D3DXVECTOR3 Moveable::getPosition() const
 */
 D3DXVECTOR3 Moveable::getRotation() const
 {
-	return D3DXVECTOR3(rx_, ry_, rz_);
+	return D3DXVECTOR3(m_rx, m_ry, m_rz);
 }

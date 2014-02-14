@@ -1,6 +1,6 @@
 /*
 ================================
- object3d.h
+ Model.h
  
  Created on: 11 Dec 2012
  Author: Jan Holownia
@@ -11,55 +11,55 @@
 
 #pragma once
 
-#include <d3d11.h>
-#include <D3DX10math.h>
-#include <fstream>
-
 #include "mesh.h"
 #include "texturearray.h"
 #include "Moveable.h"
 
 
+#include <d3d11.h>
+#include <D3DX10math.h>
+#include <fstream>
+#include <vector>
+
 /*
 ================================
  
- Object3D
+ Model
 
  A generic 3D object which can be loaded from .OBJ files.
  
 ================================
 */
-class Object3D : public Moveable
+class Model : public Moveable
 {
 public:
-	Object3D(void);	
-	virtual ~Object3D(void);
+	Model(void);	
+	virtual ~Model(void);
 
-	bool init(ID3D11Device* device, char*, WCHAR* textureFilename, WCHAR* bumpMapFilename, WCHAR* specularMapFilename);
+	bool init(ID3D11Device* device, const std::string& meshFilename, const std::string& textureFilename, const std::string& bumpMapFilename, const std::string& specularMapFilename);
 	void shutdown();
 	void render(ID3D11DeviceContext* deviceContext);
 
 	int getIndexCount() const;
 
-	ID3D11ShaderResourceView** getTexturesArray();
+	ID3D11ShaderResourceView** getTextureArray();
 
 private:
-	ID3D11Buffer* vertexBuffer_;
-	ID3D11Buffer* indexBuffer_;
-	int vertexCount_;
-	int indexCount_;
-	TextureArray* textureArray_;
-	Mesh* mesh_;
+	ID3D11Buffer* m_vertexBuffer;
+	ID3D11Buffer* m_indexBuffer;
+	int m_vertexCount;
+	int m_indexCount;
+	TextureArray* m_textureArray;
+	std::vector<Mesh> m_mesh;
 
 	bool initBuffers(ID3D11Device* device);
 	void renderBuffers(ID3D11DeviceContext* deviceContext);
 	void shutdownBuffers();	
-	bool loadTextures(ID3D11Device* device, WCHAR* filename1, WCHAR* filename2, WCHAR* filename3);
+	bool loadTextures(ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3);
 	void releaseTextures();
-	bool loadMesh(char* filename);
-	bool loadMeshFromObj(char* filename);
-	void releaseMesh();
-		
+	bool loadMesh(const std::string& filename);
+	bool loadMeshFromObj(const std::string& filename);
+			
 	struct Vertex
 	{
 		D3DXVECTOR3 position;
@@ -75,15 +75,7 @@ private:
 		float tu, tv;
 		float nx, ny, nz;
 	};
-
-	struct VectorType
-	{
-		float x, y, z;
-	};
-
-	void CalculateModelVectors();
-	void CalculateTangentBinormal(TempVertex, TempVertex, TempVertex, VectorType&, VectorType& );
-	void CalculateNormals(VectorType, VectorType, VectorType& );
-
+	
+	void CalculateTBNVectors();	
 };
 

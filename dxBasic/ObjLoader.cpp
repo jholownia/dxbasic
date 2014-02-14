@@ -19,15 +19,15 @@
  ObjLoader::ObjLoader
 ================
 */
-ObjLoader::ObjLoader(void) :
-	vertices_      (NULL),
-	texcoords_     (NULL),
-	normals_       (NULL),
-	faces_         (NULL),
-	vertexIndex_   (0),
-	texcoordIndex_ (0),
-	normalIndex_   (0),
-	faceIndex_     (0)
+ObjLoader::ObjLoader() :
+	m_vertices      (NULL),
+	m_texcoords     (NULL),
+	m_normals       (NULL),
+	m_faces         (NULL),
+	m_vertexIndex   (0),
+	m_texcoordIndex (0),
+	m_normalIndex   (0),
+	m_faceIndex     (0)
 {
 
 }
@@ -37,7 +37,7 @@ ObjLoader::ObjLoader(void) :
  ObjLoader::~ObjLoader
 ================
 */
-ObjLoader::~ObjLoader(void)
+ObjLoader::~ObjLoader()
 {
 
 }
@@ -47,7 +47,7 @@ ObjLoader::~ObjLoader(void)
  ObjLoader::init
 ================
 */
-bool ObjLoader::init( char* filename )
+bool ObjLoader::init( std::string filename )
 {
 	bool result;	
 	int vertexCount = 0;
@@ -78,7 +78,7 @@ bool ObjLoader::init( char* filename )
  which are then used to initialize buffers properly.
 ================
 */
-bool ObjLoader::readFileCounts( char* filename, int& vertexCount, int& textureCount, int& normalCount, int& faceCount )
+bool ObjLoader::readFileCounts( std::string filename, int& vertexCount, int& textureCount, int& normalCount, int& faceCount )
 {
 	std::ifstream ifs;
 	char input;
@@ -145,12 +145,12 @@ bool ObjLoader::readFileCounts( char* filename, int& vertexCount, int& textureCo
  Loads data into buffers.
 ================
 */
-bool ObjLoader::loadDataStructures( char* filename, int vertexCount, int textureCount, int normalCount, int faceCount )
+bool ObjLoader::loadDataStructures( std::string filename, int vertexCount, int textureCount, int normalCount, int faceCount )
 {
-	vertices_ = new Vector[vertexCount];
-	texcoords_ = new Vector[textureCount];
-	normals_ = new Vector[normalCount];
-	faces_ = new Face[faceCount];
+	m_vertices = new Vector[vertexCount];
+	m_texcoords = new Vector[textureCount];
+	m_normals = new Vector[normalCount];
+	m_faces = new Face[faceCount];
 
 	char input;
 	char input2;
@@ -171,48 +171,48 @@ bool ObjLoader::loadDataStructures( char* filename, int vertexCount, int texture
 		{
 			ifs.get(input);
 
-			// Read in the vertices_.
+			// Read in the vertices.
 			if(input == ' ') 
 			{ 
-				ifs >> vertices_[vertexIndex_].x >> vertices_[vertexIndex_].y >> vertices_[vertexIndex_].z;
+				ifs >> m_vertices[m_vertexIndex].x >> m_vertices[m_vertexIndex].y >> m_vertices[m_vertexIndex].z;
 
 				// Invert the Z vertex to change to left hand system.
-				vertices_[vertexIndex_].z = vertices_[vertexIndex_].z * -1.0f;
-				vertexIndex_++; 
+				m_vertices[m_vertexIndex].z = m_vertices[m_vertexIndex].z * -1.0f;
+				m_vertexIndex++; 
 			}
 
 			// Read in the texture uv coordinates.
 			if(input == 't') 
 			{ 
-				ifs >> texcoords_[texcoordIndex_].x >> texcoords_[texcoordIndex_].y;
+				ifs >> m_texcoords[m_texcoordIndex].x >> m_texcoords[m_texcoordIndex].y;
 
 				// Invert the V texture coordinates to left hand system.
-				texcoords_[texcoordIndex_].y = 1.0f - texcoords_[texcoordIndex_].y;
-				texcoordIndex_++; 
+				m_texcoords[m_texcoordIndex].y = 1.0f - m_texcoords[m_texcoordIndex].y;
+				m_texcoordIndex++; 
 			}
 
-			// Read in the normals_.
+			// Read in the normals.
 			if(input == 'n') 
 			{ 
-				ifs >> normals_[normalIndex_].x >> normals_[normalIndex_].y >> normals_[normalIndex_].z;
+				ifs >> m_normals[m_normalIndex].x >> m_normals[m_normalIndex].y >> m_normals[m_normalIndex].z;
 
 				// Invert the Z normal to change to left hand system.
-				normals_[normalIndex_].z = normals_[normalIndex_].z * -1.0f;
-				normalIndex_++; 
+				m_normals[m_normalIndex].z = m_normals[m_normalIndex].z * -1.0f;
+				m_normalIndex++; 
 			}
 		}
 
-		// Read in the faces_.
+		// Read in the faces.
 		if(input == 'f') 
 		{
 			ifs.get(input);
 			if(input == ' ')
 			{
 				// Read the face data in backwards to convert it to a left hand system from right hand system.
-				ifs >> faces_[faceIndex_].vIndex3 >> input2 >> faces_[faceIndex_].tIndex3 >> input2 >> faces_[faceIndex_].nIndex3
-					>> faces_[faceIndex_].vIndex2 >> input2 >> faces_[faceIndex_].tIndex2 >> input2 >> faces_[faceIndex_].nIndex2
-					>> faces_[faceIndex_].vIndex1 >> input2 >> faces_[faceIndex_].tIndex1 >> input2 >> faces_[faceIndex_].nIndex1;
-				faceIndex_++;
+				ifs >> m_faces[m_faceIndex].vIndex3 >> input2 >> m_faces[m_faceIndex].tIndex3 >> input2 >> m_faces[m_faceIndex].nIndex3
+					>> m_faces[m_faceIndex].vIndex2 >> input2 >> m_faces[m_faceIndex].tIndex2 >> input2 >> m_faces[m_faceIndex].nIndex2
+					>> m_faces[m_faceIndex].vIndex1 >> input2 >> m_faces[m_faceIndex].tIndex1 >> input2 >> m_faces[m_faceIndex].nIndex1;
+				m_faceIndex++;
 			}
 		}
 
@@ -238,10 +238,10 @@ bool ObjLoader::loadDataStructures( char* filename, int vertexCount, int texture
 */
 void ObjLoader::shutdown()
 {
-	delete[] vertices_;
-	delete[] texcoords_;
-	delete[] normals_;
-	delete[] faces_;
+	delete[] m_vertices;
+	delete[] m_texcoords;
+	delete[] m_normals;
+	delete[] m_faces;
 }
 
 /*
@@ -251,68 +251,128 @@ void ObjLoader::shutdown()
 */
 Mesh* ObjLoader::createMesh( int& vertexCount )
 {
-	int vIndex;
-	int tIndex;
-	int nIndex;
-
-	vertexCount = faceIndex_ * 3;
+	vertexCount = m_faceIndex * 3;
 	Mesh* mesh = new Mesh[vertexCount];
 	
+	int vIndex, tIndex, nIndex;
 	int m = 0;
 
-	for (int i = 0; i < faceIndex_; ++i)
+	for (int i = 0; i < m_faceIndex; ++i)
 	{
-		vIndex = faces_[i].vIndex1 - 1;
-		tIndex = faces_[i].tIndex1 - 1;
-		nIndex = faces_[i].nIndex1 - 1;
+		vIndex = m_faces[i].vIndex1 - 1;
+		tIndex = m_faces[i].tIndex1 - 1;
+		nIndex = m_faces[i].nIndex1 - 1;
 
-		mesh[m].x = vertices_[vIndex].x;
-		mesh[m].y = vertices_[vIndex].y;
-		mesh[m].z = vertices_[vIndex].z;
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
 
-		mesh[m].tu = texcoords_[tIndex].x;
-		mesh[m].tv = texcoords_[tIndex].y;
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
 
-		mesh[m].nx = normals_[nIndex].x;
-		mesh[m].ny = normals_[nIndex].y;
-		mesh[m].nz = normals_[nIndex].z;
-
-		++m;
-
-		vIndex = faces_[i].vIndex2 - 1;
-		tIndex = faces_[i].tIndex2 - 1;
-		nIndex = faces_[i].nIndex2 - 1;
-
-		mesh[m].x = vertices_[vIndex].x;
-		mesh[m].y = vertices_[vIndex].y;
-		mesh[m].z = vertices_[vIndex].z;
-
-		mesh[m].tu = texcoords_[tIndex].x;
-		mesh[m].tv = texcoords_[tIndex].y;
-
-		mesh[m].nx = normals_[nIndex].x;
-		mesh[m].ny = normals_[nIndex].y;
-		mesh[m].nz = normals_[nIndex].z;
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
 
 		++m;
 
-		vIndex = faces_[i].vIndex3 - 1;
-		tIndex = faces_[i].tIndex3 - 1;
-		nIndex = faces_[i].nIndex3 - 1;
+		vIndex = m_faces[i].vIndex2 - 1;
+		tIndex = m_faces[i].tIndex2 - 1;
+		nIndex = m_faces[i].nIndex2 - 1;
 
-		mesh[m].x = vertices_[vIndex].x;
-		mesh[m].y = vertices_[vIndex].y;
-		mesh[m].z = vertices_[vIndex].z;
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
 
-		mesh[m].tu = texcoords_[tIndex].x;
-		mesh[m].tv = texcoords_[tIndex].y;
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
 
-		mesh[m].nx = normals_[nIndex].x;
-		mesh[m].ny = normals_[nIndex].y;
-		mesh[m].nz = normals_[nIndex].z;
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
+
+		++m;
+
+		vIndex = m_faces[i].vIndex3 - 1;
+		tIndex = m_faces[i].tIndex3 - 1;
+		nIndex = m_faces[i].nIndex3 - 1;
+
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
+
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
+
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
 
 		++m;
 	}
 
 	return mesh;
+}
+
+void ObjLoader::createMesh( int& vertexCount, std::vector<Mesh>& mesh )
+{
+	vertexCount = m_faceIndex * 3;
+	mesh.resize(vertexCount);
+
+	int vIndex, tIndex, nIndex;
+	int m = 0;
+
+	for (int i = 0; i < m_faceIndex; ++i)
+	{
+		vIndex = m_faces[i].vIndex1 - 1;
+		tIndex = m_faces[i].tIndex1 - 1;
+		nIndex = m_faces[i].nIndex1 - 1;
+
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
+
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
+
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
+
+		++m;
+
+		vIndex = m_faces[i].vIndex2 - 1;
+		tIndex = m_faces[i].tIndex2 - 1;
+		nIndex = m_faces[i].nIndex2 - 1;
+
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
+
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
+
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
+
+		++m;
+
+		vIndex = m_faces[i].vIndex3 - 1;
+		tIndex = m_faces[i].tIndex3 - 1;
+		nIndex = m_faces[i].nIndex3 - 1;
+
+		mesh[m].x = m_vertices[vIndex].x;
+		mesh[m].y = m_vertices[vIndex].y;
+		mesh[m].z = m_vertices[vIndex].z;
+
+		mesh[m].tu = m_texcoords[tIndex].x;
+		mesh[m].tv = m_texcoords[tIndex].y;
+
+		mesh[m].nx = m_normals[nIndex].x;
+		mesh[m].ny = m_normals[nIndex].y;
+		mesh[m].nz = m_normals[nIndex].z;
+
+		++m;
+	}
 }

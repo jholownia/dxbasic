@@ -1,6 +1,6 @@
 /*
 ================================
- object3d.h
+ Model.h
  
  Created on: 11 Dec 2012
  Author: Jan Holownia
@@ -18,36 +18,35 @@
 
 /*
 ================
- Object3D::Object3D
+ Model::Model
 ================
 */
-Object3D::Object3D(void) :
-	vertexBuffer_ (NULL),
-	indexBuffer_  (NULL),
-	textureArray_ (NULL),
-	mesh_         (NULL)
+Model::Model(void) :
+	m_vertexBuffer (NULL),
+	m_indexBuffer  (NULL),
+	m_textureArray (NULL)
 {
 
 }
 
 /*
 ================
- Object3D::~Object3D
+ Model::~Model
 ================
 */
-Object3D::~Object3D(void)
+Model::~Model(void)
 {
 
 }
 
 /*
 ================
- Object3D::init
+ Model::init
 
  Creates a 3d object given direct 3d device, .obj mesh filename and texture filename.
 ================
 */
-bool Object3D::init( ID3D11Device* device, char* meshFilename, WCHAR* textureFilename, WCHAR* bumpMapFilename, WCHAR* specularMapFilename )
+bool Model::init( ID3D11Device* device, const std::string& meshFilename, const std::string& textureFilename, const std::string& bumpMapFilename, const std::string& specularMapFilename )
 {
 	bool result;
 
@@ -68,6 +67,8 @@ bool Object3D::init( ID3D11Device* device, char* meshFilename, WCHAR* textureFil
 	{
 		return false;
 	}
+
+	CalculateTBNVectors();
 	
 	result = initBuffers(device);
 	if (!result)
@@ -86,54 +87,53 @@ bool Object3D::init( ID3D11Device* device, char* meshFilename, WCHAR* textureFil
 
 /*
 ================
- Object3D::shutdown
+ Model::shutdown
 ================
 */
-void Object3D::shutdown()
+void Model::shutdown()
 {
 	releaseTextures();
-	shutdownBuffers();
-	releaseMesh();
+	shutdownBuffers();	
 }
 
 /*
 ================
- Object3D::render
+ Model::render
 ================
 */
-void Object3D::render( ID3D11DeviceContext* deviceContext )
+void Model::render( ID3D11DeviceContext* deviceContext )
 {
 	renderBuffers(deviceContext);
 }
 
 /*
 ================
- Object3D::getIndexCount
+ Model::getIndexCount
 ================
 */
-int Object3D::getIndexCount() const
+int Model::getIndexCount() const
 {
-	return indexCount_;
+	return m_indexCount;
 }
 
 /*
 ================
- Object3D::getTexture
+ Model::getTexture
 ================
 */
-ID3D11ShaderResourceView** Object3D::getTexturesArray()
+ID3D11ShaderResourceView** Model::getTextureArray()
 {
-	return textureArray_->getTextureArray();
+	return m_textureArray->getTextureArray();
 }
 
 /*
 ================
- Object3D::initBuffers
+ Model::initBuffers
 
  Creates vertex and index buffers.
 ================
 */
-bool Object3D::initBuffers( ID3D11Device* device )
+bool Model::initBuffers( ID3D11Device* device )
 {
 	Vertex* vertices;
 	unsigned long* indices;
@@ -143,23 +143,23 @@ bool Object3D::initBuffers( ID3D11Device* device )
 	D3D11_SUBRESOURCE_DATA indexData;
 	HRESULT result;
 
-	vertices = new Vertex[vertexCount_];
-	indices = new unsigned long[indexCount_];
+	vertices = new Vertex[m_vertexCount];
+	indices = new unsigned long[m_indexCount];
 
-	for (int i = 0; i < vertexCount_; i++)
+	for (int i = 0; i < m_vertexCount; i++)
 	{
-		vertices[i].position = D3DXVECTOR3(mesh_[i].x, mesh_[i].y, mesh_[i].z);
-		vertices[i].texture = D3DXVECTOR2(mesh_[i].tu, mesh_[i].tv);
-		vertices[i].normal = D3DXVECTOR3(mesh_[i].nx, mesh_[i].ny, mesh_[i].nz);
-		vertices[i].tangent = D3DXVECTOR3(mesh_[i].tx, mesh_[i].ty, mesh_[i].tz);
-		vertices[i].binormal = D3DXVECTOR3(mesh_[i].bx, mesh_[i].by, mesh_[i].bz);
+		vertices[i].position = D3DXVECTOR3(m_mesh[i].x, m_mesh[i].y, m_mesh[i].z);
+		vertices[i].texture = D3DXVECTOR2(m_mesh[i].tu, m_mesh[i].tv);
+		vertices[i].normal = D3DXVECTOR3(m_mesh[i].nx, m_mesh[i].ny, m_mesh[i].nz);
+		vertices[i].tangent = D3DXVECTOR3(m_mesh[i].tx, m_mesh[i].ty, m_mesh[i].tz);
+		vertices[i].binormal = D3DXVECTOR3(m_mesh[i].bx, m_mesh[i].by, m_mesh[i].bz);
 
 		indices[i] = i;
 	}
 
 	// Set up the description of the vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertexCount_;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * m_vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -170,7 +170,7 @@ bool Object3D::initBuffers( ID3D11Device* device )
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now finally create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer_);
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
 	if(FAILED(result))
 	{
 		return false;
@@ -178,7 +178,7 @@ bool Object3D::initBuffers( ID3D11Device* device )
 
 	// Set up the description of the index buffer.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount_;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -189,7 +189,7 @@ bool Object3D::initBuffers( ID3D11Device* device )
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer_);
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
 	if(FAILED(result))
 	{
 		return false;
@@ -207,10 +207,10 @@ bool Object3D::initBuffers( ID3D11Device* device )
 
 /*
 ================
- Object3D::renderBuffers
+ Model::renderBuffers
 ================
 */
-void Object3D::renderBuffers( ID3D11DeviceContext* deviceContext )
+void Model::renderBuffers( ID3D11DeviceContext* deviceContext )
 {
 	unsigned int stride;
 	unsigned int offset;
@@ -218,210 +218,313 @@ void Object3D::renderBuffers( ID3D11DeviceContext* deviceContext )
 	stride = sizeof(Vertex);
 	offset = 0;
 
-	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer_, &stride, &offset);
-	deviceContext->IASetIndexBuffer(indexBuffer_, DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
+	deviceContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 /*
 ================
- Object3D::shutdownBuffers
+ Model::shutdownBuffers
 ================
 */
-void Object3D::shutdownBuffers()
+void Model::shutdownBuffers()
 {
-	if (indexBuffer_)
+	if (m_indexBuffer)
 	{
-		indexBuffer_->Release();
-		indexBuffer_ = NULL;
+		m_indexBuffer->Release();
+		m_indexBuffer = NULL;
 	}
 
-	if (vertexBuffer_)
+	if (m_vertexBuffer)
 	{
-		vertexBuffer_->Release();
-		vertexBuffer_ = NULL;
+		m_vertexBuffer->Release();
+		m_vertexBuffer = NULL;
 	}
 }
 
 /*
 ================
- Object3D::loadTexture
+ Model::loadTexture
 ================
 */
-bool Object3D::loadTextures( ID3D11Device* device, WCHAR* filename1, WCHAR* filename2, WCHAR* filename3 )
+bool Model::loadTextures( ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3 )
 {
-	textureArray_ = new TextureArray;
+	m_textureArray = new TextureArray;
 
-	return textureArray_->init(device, filename1, filename2, filename3);
+	return m_textureArray->init(device, filename1, filename2, filename3);
 }
 
 /*
 ================
- Object3D::releaseTexture
+ Model::releaseTexture
 ================
 */
-void Object3D::releaseTextures()
+void Model::releaseTextures()
 {
-	if (textureArray_)
+	if (m_textureArray)
 	{
-		textureArray_->shutdown();
-		delete textureArray_;
-		textureArray_ = NULL;
+		m_textureArray->shutdown();
+		delete m_textureArray;
+		m_textureArray = NULL;
 	}
 }
 
-void Object3D::CalculateModelVectors()
+void Model::CalculateTBNVectors()
 {
-	int faceCount, i, index;
 	TempVertex vertex1, vertex2, vertex3;
-	VectorType tangent, binormal, normal;
+	D3DXVECTOR3 tangent, bitangent, normal;
 
-	faceCount = vertexCount_ / 3;
+	int index = 0;
+	int faceCount = m_vertexCount / 3;
 
-	index = 0;
-
-	for ( i = 0; i < faceCount; ++i)
+	for (int i = 0; i < faceCount; ++i)
 	{
-		vertex1.x = mesh_[index].x;
-		vertex1.y = mesh_[index].y;
-		vertex1.z = mesh_[index].z;
-		vertex1.tu = mesh_[index].tu;
-		vertex1.tv = mesh_[index].tv;
-		vertex1.nx = mesh_[index].nx;
-		vertex1.ny = mesh_[index].ny;
-		vertex1.nz = mesh_[index].nz;
+		vertex1.x = m_mesh[index].x;
+		vertex1.y = m_mesh[index].y;
+		vertex1.z = m_mesh[index].z;
+		vertex1.tu = m_mesh[index].tu;
+		vertex1.tv = m_mesh[index].tv;
+		vertex1.nx = m_mesh[index].nx;
+		vertex1.ny = m_mesh[index].ny;
+		vertex1.nz = m_mesh[index].nz;
 		++index;
 
-		vertex2.x = mesh_[index].x;
-		vertex2.y = mesh_[index].y;
-		vertex2.z = mesh_[index].z;
-		vertex2.tu = mesh_[index].tu;
-		vertex2.tv = mesh_[index].tv;
-		vertex2.nx = mesh_[index].nx;
-		vertex2.ny = mesh_[index].ny;
-		vertex2.nz = mesh_[index].nz;
+		vertex2.x = m_mesh[index].x;
+		vertex2.y = m_mesh[index].y;
+		vertex2.z = m_mesh[index].z;
+		vertex2.tu = m_mesh[index].tu;
+		vertex2.tv = m_mesh[index].tv;
+		vertex2.nx = m_mesh[index].nx;
+		vertex2.ny = m_mesh[index].ny;
+		vertex2.nz = m_mesh[index].nz;
 		++index;
 
-		vertex3.x = mesh_[index].x;
-		vertex3.y = mesh_[index].y;
-		vertex3.z = mesh_[index].z;
-		vertex3.tu = mesh_[index].tu;
-		vertex3.tv = mesh_[index].tv;
-		vertex3.nx = mesh_[index].nx;
-		vertex3.ny = mesh_[index].ny;
-		vertex3.nz = mesh_[index].nz;
+		vertex3.x = m_mesh[index].x;
+		vertex3.y = m_mesh[index].y;
+		vertex3.z = m_mesh[index].z;
+		vertex3.tu = m_mesh[index].tu;
+		vertex3.tv = m_mesh[index].tv;
+		vertex3.nx = m_mesh[index].nx;
+		vertex3.ny = m_mesh[index].ny;
+		vertex3.nz = m_mesh[index].nz;
 		++index;
 
-		// Calculate the tangent and binormal of this face
-		CalculateTangentBinormal(vertex1, vertex2, vertex3, tangent, binormal);
+		// Calculate the tangent and bitangent of this face
+		float vector1[3], vector2[3];
+		float tuVector[2], tvVector[2];	
+
+		// Edge 1
+		vector1[0] = vertex2.x - vertex1.x;
+		vector1[1] = vertex2.y - vertex1.y;
+		vector1[2] = vertex2.z - vertex1.z;
+
+		// Edge 2
+		vector2[0] = vertex3.x - vertex1.x;
+		vector2[1] = vertex3.y - vertex1.y;
+		vector2[2] = vertex3.z - vertex1.z;
+
+		tuVector[0] = vertex2.tu - vertex1.tu;
+		tvVector[0] = vertex2.tv - vertex1.tv;
+
+		tuVector[1] = vertex3.tu - vertex1.tu;
+		tvVector[1] = vertex3.tv - vertex1.tv;
+
+		// Calculate denominator for tangent equation
+		float den = 1.0f / (tuVector[0] * tvVector[1] - tuVector[1] * tvVector[0]);
+
+		// Calculate the cross product and multiply by the coefficient to get tangent and binormal
+		tangent.x = (tvVector[1] * vector1[0] - tvVector[0] * vector2[0]) * den;
+		tangent.y = (tvVector[1] * vector1[1] - tvVector[0] * vector2[1]) * den;
+		tangent.z = (tvVector[1] * vector1[2] - tvVector[0] * vector2[2]) * den;
+
+		bitangent.x = (tuVector[0] * vector2[0] - tuVector[1] * vector1[0]) * den;
+		bitangent.y = (tuVector[0] * vector2[1] - tuVector[1] * vector1[1]) * den;
+		bitangent.z = (tuVector[0] * vector2[2] - tuVector[1] * vector1[2]) * den;
+
+		D3DXVec3Normalize(&tangent, &tangent);
+		D3DXVec3Normalize(&bitangent, &bitangent);
 		
 		// Calculate new normal using tangent and binormal
-		CalculateNormals(tangent, binormal, normal);
+		D3DXVec3Cross(&normal, &tangent, &bitangent);	
+		D3DXVec3Normalize(&normal, &normal);
+				
+		// Smooth the normals
+		//D3DXMATRIX tangentSpaceMatrix(tangent.x, tangent.y, tangent.z, 0.0f, binormal.x, binormal.y, binormal.z, 0.0f, normal.x, normal.y, normal.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		//D3DXMatrixTranspose(&tangentSpaceMatrix, &tangentSpaceMatrix);
+		
+		D3DXVECTOR3 normal1, normal2, normal3, tangent1, tangent2, tangent3, bitangent1, bitangent2, bitangent3;
+
+		normal1.x = m_mesh[index - 3].nx;
+		normal1.y = m_mesh[index - 3].ny;
+		normal1.z = m_mesh[index - 3].nz;
+
+		normal2.x = m_mesh[index - 2].nx;
+		normal2.y = m_mesh[index - 2].ny;
+		normal2.z = m_mesh[index - 2].nz;
+
+		normal3.x = m_mesh[index - 1].nx;
+		normal3.y = m_mesh[index - 1].ny;
+		normal3.z = m_mesh[index - 1].nz;
+
+		D3DXVECTOR3 axis;    // rotation axis	
+		D3DXVECTOR4 temp;    // temporary vector for rotation result
+		D3DXMATRIX rotation; // rotation matrix
+		float cosAngle, angle;
+
+		// Vertex 1
+		// Find rotation axis and angle between face normal and vertex normal
+		cosAngle = D3DXVec3Dot(&normal, &normal1);
+		angle = acos(cosAngle);
+		D3DXVec3Cross(&axis, &normal, &normal1);
+		D3DXVec3Normalize(&axis, &axis);		
+		
+		// Create rotation matrix
+		D3DXMatrixRotationAxis(&rotation, &axis, angle);
+		
+		// Transform each of the vectors
+		D3DXVec3Transform(&temp, &normal, &rotation);
+		normal1.x = temp.x;
+		normal1.y = temp.y;
+		normal1.z = temp.z;
+
+		D3DXVec3Transform(&temp, &tangent, &rotation);
+		tangent1.x = temp.x;
+		tangent1.y = temp.y;
+		tangent1.z = temp.z;
+
+		D3DXVec3Transform(&temp, &bitangent, &rotation);
+		bitangent1.x = temp.x;
+		bitangent1.y = temp.y;
+		bitangent1.z = temp.z;
+
+		// do the same for vertices 2 and 3...
+		
+		// Vertex 2
+		cosAngle = D3DXVec3Dot(&normal, &normal2);
+		angle = acos(cosAngle);
+
+		D3DXVec3Cross(&axis, &normal, &normal2);
+		D3DXVec3Normalize(&axis, &axis);
+
+		D3DXMatrixRotationAxis(&rotation, &axis, angle);
+
+		D3DXVec3Transform(&temp, &normal, &rotation);
+		normal2.x = temp.x;
+		normal2.y = temp.y;
+		normal2.z = temp.z;
+
+		D3DXVec3Transform(&temp, &tangent, &rotation);
+		tangent2.x = temp.x;
+		tangent2.y = temp.y;
+		tangent2.z = temp.z;
+
+		D3DXVec3Transform(&temp, &bitangent, &rotation);
+		bitangent2.x = temp.x;
+		bitangent2.y = temp.y;
+		bitangent2.z = temp.z;
+
+		// Vertex 3
+		cosAngle = D3DXVec3Dot(&normal, &normal3);
+		angle = acos(cosAngle);
+
+		D3DXVec3Cross(&axis, &normal, &normal3);
+		D3DXVec3Normalize(&axis, &axis);
+			
+		D3DXMatrixRotationAxis(&rotation, &axis, angle);
+
+		D3DXVec3Transform(&temp, &normal, &rotation);
+		normal3.x = temp.x;
+		normal3.y = temp.y;
+		normal3.z = temp.z;
+
+		D3DXVec3Transform(&temp, &tangent, &rotation);
+		tangent3.x = temp.x;
+		tangent3.y = temp.y;
+		tangent3.z = temp.z;
+
+		D3DXVec3Transform(&temp, &bitangent, &rotation);
+		bitangent3.x = temp.x;
+		bitangent3.y = temp.y;
+		bitangent3.z = temp.z;
+
+		D3DXVec3Normalize(&normal1, &normal1);
+		D3DXVec3Normalize(&normal2, &normal2);
+		D3DXVec3Normalize(&normal3, &normal3);
+		D3DXVec3Normalize(&tangent1, &tangent1);
+		D3DXVec3Normalize(&tangent2, &tangent2);
+		D3DXVec3Normalize(&tangent3, &tangent3);
+		D3DXVec3Normalize(&bitangent1, &bitangent1);
+		D3DXVec3Normalize(&bitangent2, &bitangent2);
+		D3DXVec3Normalize(&bitangent3, &bitangent3);
 
 		// Store the results back in mesh
-		mesh_[index - 1].nx = normal.x;
-		mesh_[index - 1].ny = normal.y;
-		mesh_[index - 1].nz = normal.z;
-		mesh_[index - 1].tx = tangent.x;
-		mesh_[index - 1].ty = tangent.y;
-		mesh_[index - 1].tz = tangent.z;
-		mesh_[index - 1].bx = binormal.x;
-		mesh_[index - 1].by = binormal.y;
-		mesh_[index - 1].bz = binormal.z;
+		m_mesh[index - 1].nx = normal3.x;
+		m_mesh[index - 1].ny = normal3.y;
+		m_mesh[index - 1].nz = normal3.z;
+		m_mesh[index - 1].tx = tangent3.x;
+		m_mesh[index - 1].ty = tangent3.y;
+		m_mesh[index - 1].tz = tangent3.z;
+		m_mesh[index - 1].bx = bitangent3.x;
+		m_mesh[index - 1].by = bitangent3.y;
+		m_mesh[index - 1].bz = bitangent3.z;
 
-		mesh_[index - 2].nx = normal.x;
-		mesh_[index - 2].ny = normal.y;
-		mesh_[index - 2].nz = normal.z;
-		mesh_[index - 2].tx = tangent.x;
-		mesh_[index - 2].ty = tangent.y;
-		mesh_[index - 2].tz = tangent.z;
-		mesh_[index - 2].bx = binormal.x;
-		mesh_[index - 2].by = binormal.y;
-		mesh_[index - 2].bz = binormal.z;
+		m_mesh[index - 2].nx = normal2.x;
+		m_mesh[index - 2].ny = normal2.y;
+		m_mesh[index - 2].nz = normal2.z;
+		m_mesh[index - 2].tx = tangent2.x;
+		m_mesh[index - 2].ty = tangent2.y;
+		m_mesh[index - 2].tz = tangent2.z;
+		m_mesh[index - 2].bx = bitangent2.x;
+		m_mesh[index - 2].by = bitangent2.y;
+		m_mesh[index - 2].bz = bitangent2.z;
 
-		mesh_[index - 3].nx = normal.x;
-		mesh_[index - 3].ny = normal.y;
-		mesh_[index - 3].nz = normal.z;
-		mesh_[index - 3].tx = tangent.x;
-		mesh_[index - 3].ty = tangent.y;
-		mesh_[index - 3].tz = tangent.z;
-		mesh_[index - 3].bx = binormal.x;
-		mesh_[index - 3].by = binormal.y;
-		mesh_[index - 3].bz = binormal.z;
+		m_mesh[index - 3].nx = normal1.x;
+		m_mesh[index - 3].ny = normal1.y;
+		m_mesh[index - 3].nz = normal1.z;
+		m_mesh[index - 3].tx = tangent1.x;
+		m_mesh[index - 3].ty = tangent1.y;
+		m_mesh[index - 3].tz = tangent1.z;
+		m_mesh[index - 3].bx = bitangent1.x;
+		m_mesh[index - 3].by = bitangent1.y;
+		m_mesh[index - 3].bz = bitangent1.z;
+		
+		//// Store the results back in mesh
+		//m_mesh[index - 1].nx = normal.x;
+		//m_mesh[index - 1].ny = normal.y;
+		//m_mesh[index - 1].nz = normal.z;
+		//m_mesh[index - 1].tx = tangent.x;
+		//m_mesh[index - 1].ty = tangent.y;
+		//m_mesh[index - 1].tz = tangent.z;
+		//m_mesh[index - 1].bx = bitangent.x;
+		//m_mesh[index - 1].by = bitangent.y;
+		//m_mesh[index - 1].bz = bitangent.z;
+
+		//m_mesh[index - 2].nx = normal.x;
+		//m_mesh[index - 2].ny = normal.y;
+		//m_mesh[index - 2].nz = normal.z;
+		//m_mesh[index - 2].tx = tangent.x;
+		//m_mesh[index - 2].ty = tangent.y;
+		//m_mesh[index - 2].tz = tangent.z;
+		//m_mesh[index - 2].bx = bitangent.x;
+		//m_mesh[index - 2].by = bitangent.y;
+		//m_mesh[index - 2].bz = bitangent.z;
+
+		//m_mesh[index - 3].nx = normal.x;
+		//m_mesh[index - 3].ny = normal.y;
+		//m_mesh[index - 3].nz = normal.z;
+		//m_mesh[index - 3].tx = tangent.x;
+		//m_mesh[index - 3].ty = tangent.y;
+		//m_mesh[index - 3].tz = tangent.z;
+		//m_mesh[index - 3].bx = bitangent.x;
+		//m_mesh[index - 3].by = bitangent.y;
+		//m_mesh[index - 3].bz = bitangent.z;
 	}
 }
 
-void Object3D::CalculateTangentBinormal(TempVertex vertex1, TempVertex vertex2, TempVertex vertex3, VectorType& tangent, VectorType& binormal)
-{
-	float vector1[3], vector2[3];
-	float tuVector[2], tvVector[2];
-	float den;
-	float length;
-
-	vector1[0] = vertex2.x - vertex1.x;
-	vector1[1] = vertex2.y - vertex1.y;
-	vector1[2] = vertex2.z - vertex1.z;
-	
-	vector2[0] = vertex3.x - vertex1.x;
-	vector2[1] = vertex3.y - vertex1.y;
-	vector2[2] = vertex3.z - vertex1.z;
-
-	tuVector[0] = vertex2.tu - vertex1.tu;
-	tvVector[0] = vertex2.tv - vertex1.tv;
-
-	tuVector[1] = vertex3.tu - vertex1.tu;
-	tvVector[1] = vertex3.tv - vertex1.tv;
-
-	// Calculate denominator for the tangent/binormal equation
-	den = 1.0f / (tuVector[0] * tvVector[1] - tuVector[1] * tvVector[0]);
-
-	// Calculate the cross product and multiply by the coefficient to get tangent and binormal
-	tangent.x = (tvVector[1] * vector1[0] - tvVector[0] * vector2[0]) * den;
-	tangent.y = (tvVector[1] * vector1[1] - tvVector[0] * vector2[1]) * den;
-	tangent.z = (tvVector[1] * vector1[2] - tvVector[0] * vector2[2]) * den;
-
-	binormal.x = (tuVector[0] * vector2[0] - tuVector[1] * vector1[0]) * den;
-	binormal.y = (tuVector[0] * vector2[1] - tuVector[1] * vector1[1]) * den;
-	binormal.z = (tuVector[0] * vector2[2] - tuVector[1] * vector1[2]) * den;
-
-	// Calculate the length of this normal.
-	length = sqrt((tangent.x * tangent.x) + (tangent.y * tangent.y) + (tangent.z * tangent.z));
-
-	// Normalize the normal and then store it
-	tangent.x = tangent.x / length;
-	tangent.y = tangent.y / length;
-	tangent.z = tangent.z / length;
-
-	// Calculate the length of this normal.
-	length = sqrt((binormal.x * binormal.x) + (binormal.y * binormal.y) + (binormal.z * binormal.z));
-
-	// Normalize the normal and then store it
-	binormal.x = binormal.x / length;
-	binormal.y = binormal.y / length;
-	binormal.z = binormal.z / length;	
-}
-
-void Object3D::CalculateNormals(VectorType tangent, VectorType binormal, VectorType& normal)
-{
-	float length;
-
-	// Calculate the cross product of the tangent and binormal which will give the normal vector
-	normal.x = (tangent.y * binormal.z) - (tangent.z * binormal.y);
-	normal.y = (tangent.z * binormal.x) - (tangent.x * binormal.z);
-	normal.z = (tangent.x * binormal.y) - (tangent.y * binormal.x);
-
-	// Calculate the length of the normal
-	length = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
-
-	normal.x = normal.x / length;
-	normal.y = normal.y / length;
-	normal.z = normal.z / length;	
-}
-
-
 /*
 ================
- Object3D::loadMesh
+ Model::loadMesh
 
  Loads mesh data from a simple text file with
  the following format:
@@ -434,7 +537,7 @@ void Object3D::CalculateNormals(VectorType tangent, VectorType binormal, VectorT
  ...
 ================
 */
-bool Object3D::loadMesh( char* filename )
+bool Model::loadMesh( const std::string& filename )
 {
 	std::ifstream ifs;
 	
@@ -454,11 +557,11 @@ bool Object3D::loadMesh( char* filename )
 	}
 
 	// read vertex count
-	ifs >> vertexCount_;
-	indexCount_ = vertexCount_;
+	ifs >> m_vertexCount;
+	m_indexCount = m_vertexCount;
 
 	// Create mesh
-	mesh_ = new Mesh[vertexCount_];
+	m_mesh.resize(m_vertexCount);
 
 	// Read to the beginning of the data
 	ifs.get(input);
@@ -470,11 +573,11 @@ bool Object3D::loadMesh( char* filename )
 	ifs.get(input);
 
 	// Read the data
-	for (int i = 0; i < vertexCount_; ++i)
+	for (int i = 0; i < m_vertexCount; ++i)
 	{
-		ifs >> mesh_[i].x >> mesh_[i].y >> mesh_[i].z;
-		ifs >> mesh_[i].tu >> mesh_[i].tv;
-		ifs >> mesh_[i].nx >> mesh_[i].ny >> mesh_[i].nz;		
+		ifs >> m_mesh[i].x >> m_mesh[i].y >> m_mesh[i].z;
+		ifs >> m_mesh[i].tu >> m_mesh[i].tv;
+		ifs >> m_mesh[i].nx >> m_mesh[i].ny >> m_mesh[i].nz;		
 	}
 
 	ifs.close();
@@ -484,32 +587,38 @@ bool Object3D::loadMesh( char* filename )
 
 /*
 ================
- Object3D::loadMeshFromObj
+ Model::loadMeshFromObj
 ================
 */
-bool Object3D::loadMeshFromObj( char* filename )
+bool Model::loadMeshFromObj( const std::string& filename )
 {
 	bool result;
 	
 	ObjLoader loader;
 	result = loader.init(filename);
-	mesh_ = loader.createMesh(vertexCount_);
+	// Mesh* pMesh = loader.createMesh(m_vertexCount);
+	// m_mesh.assign(pMesh, pMesh + m_vertexCount);
+	// delete pMesh;
+	loader.createMesh(m_vertexCount, m_mesh);
 	loader.shutdown();
 
-	indexCount_ = vertexCount_;
+	m_indexCount = m_vertexCount;
 
+	// Save mesh
+	/*std::ofstream ofs;
+	ofs.open("sphere.txt");
+
+	ofs << "Vertex Count: " << m_vertexCount;
+	ofs << "\n\n";
+	ofs << "Data:\n\n";
+
+	for (Mesh m : m_mesh)
+	{
+		ofs << m.x << " " << m.y << " " << m.z << " " << m.tu << " " << m.tv << " " << m.nx << " " << m.ny << " " << m.nz << "\n";
+	}
+
+	ofs.close();
+*/
 	return result;
 }
-
-/*
-================
- Object3D::releaseMesh
-================
-*/
-void Object3D::releaseMesh()
-{	
-	delete mesh_;
-	mesh_ = NULL;	
-}
-
 

@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma warning( disable : C4005 ) // Get rid of annoying warnings related to using DirecX SDK instead of Windows 8 SDK
+
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DX11.lib")
@@ -22,14 +24,13 @@
 #include <d3d11.h>
 #include <D3DX10math.h>
 
-
 /*
 ================================
  
  D3DManager
 
  A wrapper class for Direct3D initialization.
- Creates the device sets up swap chain and the back buffer.
+ Creates the device, device context, sets up swap chain and the back buffer.
  
 ================================
 */
@@ -53,31 +54,31 @@ public:
 	void getWorldMatrix(D3DXMATRIX&);
 	void getOrthoMatrix(D3DXMATRIX&);
 
-	void getGpuInfo(char*, int&); // FIXME: change to string
+	void getGpuInfo(std::string& description, int& memory);
+	
 	ID3D11DepthStencilView* getDepthStencilView();
 
 	void turnZBufferOn();
 	void turnZBufferOff();
 
 	void setBackBufferRenderTarget();
-	void resetViewport();
+	void resetViewport(float width, float height);
 
 private:
-	bool vsyncEnabled_;
-	int gpuMemory_;
-	char gpuDescription_[128];    // FIXME
-	IDXGISwapChain* swapChain_;
-	ID3D11Device* device_;
-	ID3D11DeviceContext* deviceContext_;
-	ID3D11RenderTargetView* renderTargetView_;
-	ID3D11Texture2D* depthStencilBuffer_;
-	ID3D11DepthStencilState* depthStencilState_;
-	ID3D11DepthStencilView* depthStencilView_;
-	ID3D11RasterizerState* rasterizerState_;
-	D3DXMATRIX projectionMatrix_;
-	D3DXMATRIX worldMatrix_;
-	D3DXMATRIX orthoMatrix_;
-	ID3D11DepthStencilState* depthDisableStencilState_;
-	D3D11_VIEWPORT viewport_; // can be made non-member?
+	bool m_vsyncEnabled;
+	int m_gpuMemory;
+	std::string m_gpuDescription;
+	IDXGISwapChain* m_swapChain;
+	ID3D11Device* m_device;
+	ID3D11DeviceContext* m_deviceContext;
+	ID3D11RenderTargetView* m_renderTargetView;
+	ID3D11Texture2D* m_depthStencilBuffer;
+	ID3D11DepthStencilState* m_depthStencilState;
+	ID3D11DepthStencilView* m_depthStencilView;
+	ID3D11RasterizerState* m_rasterizerState;
+	D3DXMATRIX m_projectionMatrix;
+	D3DXMATRIX m_worldMatrix;
+	D3DXMATRIX m_orthoMatrix;
+	ID3D11DepthStencilState* m_disableDepthStencilState;	
 };
 
