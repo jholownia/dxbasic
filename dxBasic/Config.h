@@ -9,6 +9,8 @@
 ================================
 */
 
+
+
 // Global config variables
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;

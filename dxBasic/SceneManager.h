@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma warning( disable : 4005 )
+
 #include <Windows.h>
 
 // Use forward declarations and move all this to the cpp file

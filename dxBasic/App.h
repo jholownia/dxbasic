@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma warning( disable : 4005 )
+
 // This should speed up build process
 #define NO_MINMAX
 #define WIN32_LEAN_AND_MEAN

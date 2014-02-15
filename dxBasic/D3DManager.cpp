@@ -334,8 +334,8 @@ bool D3DManager::init( int screenWidth, int screenHeight, const bool vsync, HWND
 
 	// Setup the viewport
 	D3D11_VIEWPORT viewport;
-	viewport.Width = screenWidth;
-	viewport.Height = screenHeight;
+	viewport.Width = static_cast<float>(screenWidth);
+	viewport.Height = static_cast<float>(screenHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;

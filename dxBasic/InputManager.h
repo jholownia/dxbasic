@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma warning( disable : 4005 )
+
 #define DIRECTINPUT_VERSION 0x0800
 
 #pragma comment(lib, "dinput8.lib")

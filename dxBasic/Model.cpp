@@ -152,7 +152,7 @@ bool Model::initBuffers( ID3D11Device* device )
 		vertices[i].texture = D3DXVECTOR2(m_mesh[i].tu, m_mesh[i].tv);
 		vertices[i].normal = D3DXVECTOR3(m_mesh[i].nx, m_mesh[i].ny, m_mesh[i].nz);
 		vertices[i].tangent = D3DXVECTOR3(m_mesh[i].tx, m_mesh[i].ty, m_mesh[i].tz);
-		vertices[i].binormal = D3DXVECTOR3(m_mesh[i].bx, m_mesh[i].by, m_mesh[i].bz);
+		vertices[i].bitangent = D3DXVECTOR3(m_mesh[i].bx, m_mesh[i].by, m_mesh[i].bz);
 
 		indices[i] = i;
 	}

@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma warning( disable : 4005 )
+
 #include "mesh.h"
 #include "texturearray.h"
 #include "Moveable.h"
@@ -42,7 +44,7 @@ public:
 
 	int getIndexCount() const;
 
-	ID3D11ShaderResourceView** getTextureArray();
+	ID3D11ShaderResourceView** getTextureArray();  //change to vector
 
 private:
 	ID3D11Buffer* m_vertexBuffer;
@@ -66,7 +68,7 @@ private:
 		D3DXVECTOR2 texture;
 		D3DXVECTOR3 normal;
 		D3DXVECTOR3 tangent;
-		D3DXVECTOR3 binormal;
+		D3DXVECTOR3 bitangent;
 	};
 
 	struct TempVertex

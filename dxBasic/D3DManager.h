@@ -11,7 +11,7 @@
 
 #pragma once
 
-#pragma warning( disable : C4005 ) // Get rid of annoying warnings related to using DirecX SDK instead of Windows 8 SDK
+#pragma warning( disable : 4005 ) // Get rid of annoying warnings related to using DirecX SDK instead of Windows 8 SDK
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
