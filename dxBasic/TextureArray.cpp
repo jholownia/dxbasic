@@ -16,12 +16,9 @@
  Texture::Texture
 ================
 */
-TextureArray::TextureArray(void)
-	
+TextureArray::TextureArray(void)	
 {
-	textures_[0] = NULL;
-	textures_[1] = NULL;
-	textures_[2] = NULL;
+	
 }
 
 /*
@@ -41,21 +38,23 @@ TextureArray::~TextureArray(void)
 */
 bool TextureArray::init( ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3 )
 {
-	HRESULT result;
+	m_textures.resize(3);
 	
-	result = D3DX11CreateShaderResourceViewFromFileA(device, filename1.c_str(), NULL, NULL, &textures_[0], NULL);		
+	HRESULT result;
+			
+	result = D3DX11CreateShaderResourceViewFromFileA(device, filename1.c_str(), NULL, NULL, &m_textures[0], NULL);		
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	result = D3DX11CreateShaderResourceViewFromFileA(device, filename2.c_str(), NULL, NULL, &textures_[1], NULL);		
+	result = D3DX11CreateShaderResourceViewFromFileA(device, filename2.c_str(), NULL, NULL, &m_textures[1], NULL);		
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	result = D3DX11CreateShaderResourceViewFromFileA(device, filename3.c_str(), NULL, NULL, &textures_[2], NULL);		
+	result = D3DX11CreateShaderResourceViewFromFileA(device, filename3.c_str(), NULL, NULL, &m_textures[2], NULL);		
 	if (FAILED(result))
 	{
 		return false;
@@ -71,26 +70,11 @@ bool TextureArray::init( ID3D11Device* device, const std::string& filename1, con
 */
 void TextureArray::shutdown()
 {
-	if (textures_[0])
+	for ( auto texture : m_textures )
 	{
-
-		textures_[0]->Release();
-		textures_[0] = NULL;
+		texture->Release();
 	}
-
-	if (textures_[1])
-	{
-
-		textures_[1]->Release();
-		textures_[1] = NULL;
-	}
-
-	if (textures_[1])
-	{
-
-		textures_[1]->Release();
-		textures_[1] = NULL;
-	}
+	m_textures.clear();
 }
 
 /*
@@ -98,7 +82,7 @@ void TextureArray::shutdown()
  Texture::getTexture
 ================
 */
-ID3D11ShaderResourceView** TextureArray::getTextureArray()
+const std::vector<ID3D11ShaderResourceView*>& TextureArray::getTextureArray() const
 {
-	return textures_;
+	return m_textures;
 }

@@ -44,7 +44,7 @@ public:
 
 	int getIndexCount() const;
 
-	ID3D11ShaderResourceView** getTextureArray();  //change to vector
+	std::vector<ID3D11ShaderResourceView*> getTextureArray();
 
 private:
 	ID3D11Buffer* m_vertexBuffer;

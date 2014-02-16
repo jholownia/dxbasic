@@ -47,13 +47,13 @@ public:
 	LRESULT CALLBACK messageHandler(HWND, UINT, WPARAM, LPARAM);
 
 private:
-	LPCWSTR appName_;    
-	HINSTANCE hinstance_;
-	HWND hwnd_;          
-	InputManager* input_;
-	SceneManager* scene_;
-	Position* cameraPosition_;
-	Position* modelPosition_;
+	LPCWSTR m_appName;    
+	HINSTANCE m_hinstance;
+	HWND m_hwnd;          
+	InputManager* m_input;
+	SceneManager* m_scene;
+	Position* m_cameraPosition;
+	Position* m_modelPosition;
 	
 	bool frame();
 	void initializeWindows(int&, int&);
@@ -61,6 +61,6 @@ private:
 
 };
 
-static App* appHandle = NULL;
+static App* g_appHandle = NULL;
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);

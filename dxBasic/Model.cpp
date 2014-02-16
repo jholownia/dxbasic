@@ -121,7 +121,7 @@ int Model::getIndexCount() const
  Model::getTexture
 ================
 */
-ID3D11ShaderResourceView** Model::getTextureArray()
+std::vector<ID3D11ShaderResourceView*> Model::getTextureArray()
 {
 	return m_textureArray->getTextureArray();
 }

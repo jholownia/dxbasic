@@ -48,12 +48,12 @@ public:
 	void strafeRight(bool);	
 
 private:
-	float posX_, posY_, posZ_;
-	float rotationX_, rotationY_, rotationZ_;	
-	float frameTime_;	
-	float leftTurnSpeed_;
-	float rightTurnSpeed_;
-	float forwardSpeed_, backwardSpeed_;
-	float strafeRightSpeed_, strafeLeftSpeed_;
+	float m_posX, m_posY, m_posZ;
+	float m_rotationX, m_rotationY, m_rotationZ;	
+	float m_frameTime;	
+	float m_leftTurnSpeed;
+	float m_rightTurnSpeed;
+	float m_forwardSpeed, m_backwardSpeed;
+	float m_strafeRightSpeed, m_strafeLeftSpeed;
 };
 

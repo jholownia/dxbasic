@@ -17,6 +17,7 @@
 #include <D3DX11.h>
 
 #include <string>
+#include <vector>
 
 /*
 ================================
@@ -36,9 +37,9 @@ public:
 	bool init(ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3);
 	void shutdown();
 
-	ID3D11ShaderResourceView** getTextureArray();
+	const std::vector<ID3D11ShaderResourceView*>& getTextureArray() const;
 
 private:
-	ID3D11ShaderResourceView* textures_[3];
+	std::vector<ID3D11ShaderResourceView*> m_textures;
 };
 

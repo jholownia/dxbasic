@@ -19,10 +19,10 @@
 ================
 */
 App::App(void) :
-	input_			(NULL),
-	scene_			(NULL),
-	cameraPosition_	(NULL),
-	modelPosition_	(NULL)
+	m_input			(NULL),
+	m_scene			(NULL),
+	m_cameraPosition	(NULL),
+	m_modelPosition	(NULL)
 {
 
 }
@@ -54,27 +54,27 @@ bool App::init()
 	initializeWindows(screenWidth, screenHeight);
 
 	// Create input object
-	input_ = new InputManager;
-	if (!input_)
+	m_input = new InputManager;
+	if (!m_input)
 	{
 		return false;
 	}
 	
-	result = input_->init(hinstance_, hwnd_, screenWidth, screenHeight);
+	result = m_input->init(m_hinstance, m_hwnd, screenWidth, screenHeight);
 	if (!result)
 	{
-		MessageBoxW(hwnd_, L"Could not initialize input manager", L"Error", MB_OK);
+		MessageBoxW(m_hwnd, L"Could not initialize input manager", L"Error", MB_OK);
 		return false;
 	}
 
 	// Create scene
-	scene_ = new SceneManager;
-	if(!scene_)
+	m_scene = new SceneManager;
+	if(!m_scene)
 	{
 		return false;
 	}
 
-	result = scene_->init(screenWidth, screenHeight, hwnd_);
+	result = m_scene->init(screenWidth, screenHeight, m_hwnd);
 	if(!result)
 	{
 		return false;
@@ -83,14 +83,14 @@ bool App::init()
 	return true;
 
 	// Camera position
-	cameraPosition_ = new Position;
-	cameraPosition_->setPosition(0.0f, 5.0f, 0.0f);
-	cameraPosition_->setRotation(0.0f, 45.0f, 0.0f);
+	m_cameraPosition = new Position;
+	m_cameraPosition->setPosition(0.0f, 5.0f, 0.0f);
+	m_cameraPosition->setRotation(0.0f, 45.0f, 0.0f);
 
 	// Model position
-	modelPosition_ = new Position;
-	modelPosition_->setPosition(10.0f, 1.0f, 10.0f);
-	modelPosition_->setRotation(0.0f, 45.0f, 0.0f);
+	m_modelPosition = new Position;
+	m_modelPosition->setPosition(10.0f, 1.0f, 10.0f);
+	m_modelPosition->setRotation(0.0f, 45.0f, 0.0f);
 
 	return true;
 }
@@ -104,24 +104,24 @@ bool App::init()
 */
 void App::shutdown()
 {	
-	delete modelPosition_;
-	modelPosition_ = NULL;
+	delete m_modelPosition;
+	m_modelPosition = NULL;
 
-	delete cameraPosition_;
-	cameraPosition_ = NULL;	
+	delete m_cameraPosition;
+	m_cameraPosition = NULL;	
 	
-	if(scene_)
+	if(m_scene)
 	{
-		scene_->shutdown();
-		delete scene_;
-		scene_ = NULL;
+		m_scene->shutdown();
+		delete m_scene;
+		m_scene = NULL;
 	}
 
-	if(input_)
+	if(m_input)
 	{
-		input_->shutdown();
-		delete input_;
-		input_ = NULL;
+		m_input->shutdown();
+		delete m_input;
+		m_input = NULL;
 	}
 
 	shutdownWindows();
@@ -169,7 +169,7 @@ void App::run()
 			}
 		}
 
-		if (input_->isEscPressed() == true)
+		if (m_input->isEscPressed() == true)
 		{
 			done = true;
 		}
@@ -188,14 +188,14 @@ bool App::frame()
 {
 	bool result;
 
-	result = input_->update();
+	result = m_input->update();
 	if (!result)
 	{
 		return false;
 	}
 
 	// Pass parameters to scene manager
-	result = scene_->frame();
+	result = m_scene->frame();
 	if (!result)
 	{
 		return false;
@@ -228,23 +228,23 @@ void App::initializeWindows( int& screenWidth, int& screenHeight)
 	int posX;
 	int posY;
 		
-	appHandle = this;
-	hinstance_ = GetModuleHandle(NULL);
+	g_appHandle = this;
+	m_hinstance = GetModuleHandle(NULL);
 		
-	appName_ = L"Tiger";
+	m_appName = L"Tiger";
 
 	// Setup windows
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hInstance = hinstance_;
+	wc.hInstance = m_hinstance;
 	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
 	wc.hIconSm = wc.hIcon;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName = appName_;
+	wc.lpszClassName = m_appName;
 	wc.cbSize = sizeof(WNDCLASSEX);
 	
 	// Register the window class.
@@ -283,14 +283,14 @@ void App::initializeWindows( int& screenWidth, int& screenHeight)
 	}
 
 	// Create the window with the screen settings and get the handle to it.
-	hwnd_ = CreateWindowExW(WS_EX_APPWINDOW, appName_, appName_, 
+	m_hwnd = CreateWindowExW(WS_EX_APPWINDOW, m_appName, m_appName, 
 		WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
-		posX, posY, screenWidth, screenHeight, NULL, NULL, hinstance_, NULL);
+		posX, posY, screenWidth, screenHeight, NULL, NULL, m_hinstance, NULL);
 
 	// Bring the window up on the screen and set it as main focus.
-	ShowWindow(hwnd_, SW_SHOW);
-	SetForegroundWindow(hwnd_);
-	SetFocus(hwnd_);
+	ShowWindow(m_hwnd, SW_SHOW);
+	SetForegroundWindow(m_hwnd);
+	SetFocus(m_hwnd);
 
 	// Hide the mouse cursor.
 	ShowCursor(false);
@@ -313,15 +313,15 @@ void App::shutdownWindows()
 	}
 
 	// Remove the window.
-	DestroyWindow(hwnd_);
-	hwnd_ = NULL;
+	DestroyWindow(m_hwnd);
+	m_hwnd = NULL;
 
 	// Remove the application instance.
-	UnregisterClass(appName_, hinstance_);
-	hinstance_ = NULL;
+	UnregisterClass(m_appName, m_hinstance);
+	m_hinstance = NULL;
 
 	// Release the pointer to this class.
-	appHandle = NULL;	
+	g_appHandle = NULL;	
 }
 
 /*
@@ -347,7 +347,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam
 		}
 	default:
 		{
-			return appHandle->messageHandler(hwnd, umessage, wparam, lparam);
+			return g_appHandle->messageHandler(hwnd, umessage, wparam, lparam);
 		}
 	}
 }

@@ -596,13 +596,41 @@ void D3DManager::setBackBufferRenderTarget()
 
 void D3DManager::resetViewport(float width, float height)
 {
-	D3D11_VIEWPORT viewport;
-	viewport.Width = width;
-	viewport.Height = height;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	
-	m_deviceContext->RSSetViewports(1, &viewport);
+	if (m_swapChain)
+	{
+		m_deviceContext->OMSetRenderTargets(0, 0, 0);
+
+		// Release all outstanding references to the swap chain's buffers.
+		m_renderTargetView->Release();
+
+		HRESULT hr = m_swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+
+		// Add error handling
+
+		// Get buffer and create a render target view
+		ID3D11Texture2D* pBuffer;
+		hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBuffer);
+
+		hr = m_device->CreateRenderTargetView(pBuffer, NULL, &m_renderTargetView);
+
+		pBuffer->Release();
+
+		m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, NULL);
+		
+		// Setup projection matrix
+		float fov = (float) D3DX_PI / 4.0f;
+		float aspectRatio = width / height;
+		D3DXMatrixPerspectiveFovLH(&m_projectionMatrix, fov, aspectRatio, 1.0f, 1000.0f);
+		
+		// Setup the viewport
+		D3D11_VIEWPORT viewport;
+		viewport.Width = width;
+		viewport.Height = height;
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+
+		m_deviceContext->RSSetViewports(1, &viewport);
+	}	
 }

@@ -17,11 +17,11 @@
 ================
 */
 SceneManager::SceneManager(void) :
-	d3d_	(NULL),
-	camera_	(NULL),
-	model_	(NULL),
-	shader_	(NULL),
-	light_	(NULL)
+	m_d3d	(NULL),
+	m_camera	(NULL),
+	m_model	(NULL),
+	m_shader	(NULL),
+	m_light	(NULL)
 {
 
 }
@@ -47,44 +47,44 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 {	
 	bool result;
 	
-	d3d_ = new D3DManager;
+	m_d3d = new D3DManager;
 
-	if (!d3d_)
+	if (!m_d3d)
 	{
 		return false;
 	}
 
-	result = d3d_->init(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	result = m_d3d->init(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 
 	if (!result)
 	{
 		MessageBox(hwnd, L"Error initializing Direct3D", L"Error", MB_OK);
 		return false;
 	}
-
+	
 	// Create camera
-	camera_ = new Camera;
+	m_camera = new Camera;
 	// camera_->setPosition(0.0f, 2.0f, -5.0f);
 	// camera_->setRotation(20.0f, 0.0f, 0.0f);
-	camera_->setPosition(0.0f, 0.0f, -5.0f);
-	camera_->render();
+	m_camera->setPosition(0.0f, 0.0f, -5.0f);
+	m_camera->render();
 	D3DXMATRIX baseViewMatrix;
-	camera_->getViewMatrix(baseViewMatrix);
+	m_camera->getViewMatrix(baseViewMatrix);
 
 	// Create model
-	model_ = new Model;
-	result = model_->init(d3d_->getDevice(), "data/ball.obj", "data/earth_4k.jpg", "data/earth_normal.png", "data/earth_specular.jpg");
+	m_model = new Model;
+	result = m_model->init(m_d3d->getDevice(), "data/ball.obj", "data/earth_4k.jpg", "data/earth_normal.png", "data/earth_specular.jpg");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize Model.", L"Error", MB_OK);
 		return false;
 	}
 
-	model_->setRotation(0.0f, 45.0f, 0.0f);
+	m_model->setRotation(0.0f, 45.0f, 0.0f);
 
 	// Create shader
-	shader_ = new Shader;
-	result = shader_->init(d3d_->getDevice(), hwnd);
+	m_shader = new Shader;
+	result = m_shader->init(m_d3d->getDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize Shader.", L"Error", MB_OK);
@@ -92,19 +92,19 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Light
-	light_ = new Light;
-	light_->setAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
-	light_->setDiffuseColor(1.0f, 1.0f, 0.8f, 1.0f);	
+	m_light = new Light;
+	m_light->setAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
+	m_light->setDiffuseColor(1.0f, 1.0f, 0.8f, 1.0f);	
 	// light_->setDirection(-1.0f, 0.7f, 1.5f);
 	
-	light_->setDirection(0.0f, 0.0f, 1.0f);
+	m_light->setDirection(0.0f, 0.0f, 1.0f);
 	// light_->setDirection(-0.8f, -0.5f, 1.0f);
-	light_->setLookAt(0.0f, 0.0f, 0.0f);	
-	light_->generateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+	m_light->setLookAt(0.0f, 0.0f, 0.0f);	
+	m_light->generateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 	
-	light_->setSpecularColor(1.0f, 1.0f, 0.7f, 1.0f);
-	light_->setSpecularPower(26.0f);
-	light_->setSpecularIntensity(0.6f);
+	m_light->setSpecularColor(1.0f, 1.0f, 0.7f, 1.0f);
+	m_light->setSpecularPower(26.0f);
+	m_light->setSpecularIntensity(0.6f);
 	
 	return true;
 }
@@ -116,24 +116,24 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 */
 void SceneManager::shutdown()
 {
-	delete light_;
-	light_ = NULL;
+	delete m_light;
+	m_light = NULL;
 
-	if (model_)
+	if (m_model)
 	{
-		model_->shutdown();
-		delete model_;
-		model_ = NULL;
+		m_model->shutdown();
+		delete m_model;
+		m_model = NULL;
 	}
 
-	delete camera_;
-	camera_ = NULL;
+	delete m_camera;
+	m_camera = NULL;
 
-	if (d3d_)
+	if (m_d3d)
 	{
-		d3d_->shutdown();
-		delete d3d_;
-		d3d_ = NULL;
+		m_d3d->shutdown();
+		delete m_d3d;
+		m_d3d = NULL;
 	}
 }
 
@@ -194,17 +194,17 @@ bool SceneManager::render()
 void SceneManager::renderScene()
 {
 	// Begin scene
-	d3d_->beginScene(0.0f, 0.0f, 0.0f, 1.0f);
+	m_d3d->beginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Render the camera
-	camera_->render();
+	m_camera->render();
 
 	// Get matrices
 	D3DXMATRIX viewMatrix, projectionMatrix, orthoMatrix;
 
-	camera_->getViewMatrix(viewMatrix);
-	d3d_->getProjectionMatrix(projectionMatrix);
-	d3d_->getOrthoMatrix(orthoMatrix);
+	m_camera->getViewMatrix(viewMatrix);
+	m_d3d->getProjectionMatrix(projectionMatrix);
+	m_d3d->getOrthoMatrix(orthoMatrix);
 
 	// Move the model?
 	static float rotation = 0;
@@ -212,7 +212,7 @@ void SceneManager::renderScene()
 	D3DXMATRIX rotationMatrix;
 	D3DXMatrixRotationY(&rotationMatrix, -rotation);
 	rotation += 0.01f;
-	if (rotation == 360) rotation = 0;
+	if (rotation >= 360.0f) rotation -= 360.0f;
 
 	//D3DXMatrixRotationY(&rotationMatrix, model_->getRotation().y);	
 	//D3DXMATRIX translationMatrix;
@@ -221,7 +221,7 @@ void SceneManager::renderScene()
 	// Render the model
 
 	D3DXMATRIX worldMatrix;
-	d3d_->getWorldMatrix(worldMatrix);
+	m_d3d->getWorldMatrix(worldMatrix);
 
 	// Scale?
 	/*D3DXMATRIX scaleMatrix;	
@@ -230,9 +230,9 @@ void SceneManager::renderScene()
 
 	D3DXMatrixMultiply(&worldMatrix, &worldMatrix, &rotationMatrix);
 
-	model_->render(d3d_->getDeviceContext());
-	shader_->render(d3d_->getDeviceContext(), model_->getIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model_->getTextureArray(), light_->getDirection(), light_->getAmbientColor(), light_->getDiffuseColor(), camera_->getPosition(), light_->getSpecularColor(), light_->getSpecularPower(), light_->getSpecularIntensity());
+	m_model->render(m_d3d->getDeviceContext());
+	m_shader->render(m_d3d->getDeviceContext(), m_model->getIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_model->getTextureArray(), m_light->getDirection(), m_light->getAmbientColor(), m_light->getDiffuseColor(), m_camera->getPosition(), m_light->getSpecularColor(), m_light->getSpecularPower(), m_light->getSpecularIntensity());
 
 	// End scene
-	d3d_->endScene();
+	m_d3d->endScene();
 }

@@ -48,12 +48,12 @@ public:
 	bool render();
 
 private:	
-	D3DManager* d3d_;
-	Camera* camera_;
-	Model* model_;
-	Shader* shader_;
-	Light* light_;
-
+	D3DManager* m_d3d;
+	Camera* m_camera;
+	Model* m_model;
+	Shader* m_shader;
+	Light* m_light;
+	
 	void renderScene();
 };
 
