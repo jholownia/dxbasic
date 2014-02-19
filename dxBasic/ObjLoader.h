@@ -15,6 +15,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 /*
 ================================
@@ -32,9 +33,7 @@ public:
 	~ObjLoader();
 
 	bool init(std::string filename);
-	void shutdown();
-	
-	Mesh* createMesh(int& vertexCount);
+
 	void createMesh(int& vertexCount, std::vector<Mesh>& mesh);
 	
 private:
@@ -50,10 +49,10 @@ private:
 		int nIndex1, nIndex2, nIndex3;
 	};
 
-	Vector* m_vertices;
-	Vector* m_texcoords;
-	Vector* m_normals;
-	Face* m_faces;
+	std::unique_ptr<Vector[]> m_vertices;
+	std::unique_ptr<Vector[]> m_texcoords;
+	std::unique_ptr<Vector[]> m_normals;
+	std::unique_ptr<Face[]> m_faces;
 
 	int m_vertexIndex;
 	int m_texcoordIndex;

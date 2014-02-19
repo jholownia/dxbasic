@@ -82,7 +82,7 @@ void Camera::render()
  Camera::getViewMatrix
 ================
 */
-void Camera::getViewMatrix( D3DXMATRIX& viewMatrix )
+void Camera::getViewMatrix( D3DXMATRIX& viewMatrix ) const
 {
 	viewMatrix = m_viewMatrix;
 }
@@ -128,7 +128,7 @@ void Camera::renderReflection(float height)
  Camera::getReflectionViewMatrix
 ================
 */
-D3DXMATRIX Camera::getReflectionViewMatrix()
+D3DXMATRIX Camera::getReflectionViewMatrix() const
 {
 	return m_reflectionMatrix;
 }

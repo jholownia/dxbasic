@@ -32,10 +32,10 @@ public:
 	~Camera();	
 
 	void render();
-	void getViewMatrix(D3DXMATRIX& viewMatrix);
+	void getViewMatrix(D3DXMATRIX& viewMatrix) const;
 
 	void renderReflection(float);
-	D3DXMATRIX getReflectionViewMatrix();
+	D3DXMATRIX getReflectionViewMatrix() const;
 
 protected:	
 	D3DXMATRIX m_viewMatrix;

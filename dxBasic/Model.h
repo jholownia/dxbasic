@@ -22,6 +22,10 @@
 #include <D3DX10math.h>
 #include <fstream>
 #include <vector>
+#include <wrl/client.h>
+#include <memory>
+
+using Microsoft::WRL::ComPtr;
 
 /*
 ================================
@@ -39,26 +43,23 @@ public:
 	virtual ~Model(void);
 
 	bool init(ID3D11Device* device, const std::string& meshFilename, const std::string& textureFilename, const std::string& bumpMapFilename, const std::string& specularMapFilename);
-	void shutdown();
 	void render(ID3D11DeviceContext* deviceContext);
 
 	int getIndexCount() const;
 
-	std::vector<ID3D11ShaderResourceView*> getTextureArray();
+	const std::vector<ID3D11ShaderResourceView*>& getTextureArray() const;
 
 private:
-	ID3D11Buffer* m_vertexBuffer;
-	ID3D11Buffer* m_indexBuffer;
+	ComPtr<ID3D11Buffer> m_vertexBuffer;
+	ComPtr<ID3D11Buffer> m_indexBuffer;
 	int m_vertexCount;
 	int m_indexCount;
-	TextureArray* m_textureArray;
+	std::unique_ptr<TextureArray> m_textureArray;	
 	std::vector<Mesh> m_mesh;
 
 	bool initBuffers(ID3D11Device* device);
-	void renderBuffers(ID3D11DeviceContext* deviceContext);
-	void shutdownBuffers();	
+	void renderBuffers(ID3D11DeviceContext* deviceContext);	
 	bool loadTextures(ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3);
-	void releaseTextures();
 	bool loadMesh(const std::string& filename);
 	bool loadMeshFromObj(const std::string& filename);
 			

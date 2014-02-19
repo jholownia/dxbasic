@@ -11,7 +11,7 @@
 
 #pragma once
 
-#pragma warning( disable : 4005 ) // Get rid of annoying warnings related to using DirecX SDK instead of Windows 8 SDK
+#pragma warning( disable : 4005 )
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -23,6 +23,10 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <D3DX10math.h>
+
+#include <wrl/client.h>
+
+using Microsoft::WRL::ComPtr;
 
 /*
 ================================
@@ -42,43 +46,43 @@ public:
 	~D3DManager(void);
 
 	bool init( int screenWidth, int screenHeight, const bool vsync, HWND hwnd, const bool fullscreen, const float screenDepth, const float screenNear );
-	void shutdown();
 	
 	void beginScene( float r, float g, float b, float a );
 	void endScene();
 
-	ID3D11Device* getDevice();
-	ID3D11DeviceContext* getDeviceContext();
+	ID3D11Device* getDevice() const;
+	ID3D11DeviceContext* getDeviceContext() const;
 
-	void getProjectionMatrix(D3DXMATRIX&);
-	void getWorldMatrix(D3DXMATRIX&);
-	void getOrthoMatrix(D3DXMATRIX&);
-
-	void getGpuInfo(std::string& description, int& memory);
+	void getProjectionMatrix(D3DXMATRIX&) const;
+	void getWorldMatrix(D3DXMATRIX&) const;
+	void getOrthoMatrix(D3DXMATRIX&) const;
 	
-	ID3D11DepthStencilView* getDepthStencilView();
+	void getGpuInfo(std::string& description, int& memory) const;	
+	
+	ID3D11DepthStencilView* getDepthStencilView() const;
 
 	void turnZBufferOn();
 	void turnZBufferOff();
-
-	void setBackBufferRenderTarget();
+	
 	void resetViewport(float width, float height);
 
 private:
 	bool m_vsyncEnabled;
 	int m_gpuMemory;
 	std::string m_gpuDescription;
-	IDXGISwapChain* m_swapChain;
-	ID3D11Device* m_device;
-	ID3D11DeviceContext* m_deviceContext;
-	ID3D11RenderTargetView* m_renderTargetView;
-	ID3D11Texture2D* m_depthStencilBuffer;
-	ID3D11DepthStencilState* m_depthStencilState;
-	ID3D11DepthStencilView* m_depthStencilView;
-	ID3D11RasterizerState* m_rasterizerState;
+	ComPtr<IDXGISwapChain> m_swapChain;
+	ComPtr<ID3D11Device> m_device;
+	ComPtr<ID3D11DeviceContext> m_deviceContext;
+	ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+	ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
+	ComPtr<ID3D11DepthStencilState> m_depthStencilState;
+	ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+	ComPtr<ID3D11RasterizerState> m_rasterizerState;
 	D3DXMATRIX m_projectionMatrix;
 	D3DXMATRIX m_worldMatrix;
 	D3DXMATRIX m_orthoMatrix;
-	ID3D11DepthStencilState* m_disableDepthStencilState;	
+	ComPtr<ID3D11DepthStencilState> m_disableDepthStencilState;	
+
+	void setBackBufferRenderTarget();
 };
 

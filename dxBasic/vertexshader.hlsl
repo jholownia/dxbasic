@@ -1,38 +1,8 @@
-cbuffer MatrixBuffer
-{
-	matrix worldMatrix;
-	matrix viewMatrix;
-	matrix projectionMatrix;
-};
+#include "cbuffers.hlsli"
 
-cbuffer CameraBuffer
+PixelInput LightVertexShader(VertexInput input)
 {
-	float3 cameraPosition;
-	float padding;
-};
-
-struct VertexInputType
-{
-    float4 position : POSITION;
-    float2 tex : TEXCOORD0;
-	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
-	float3 binormal : BINORMAL;
-};
-
-struct PixelInputType
-{
-    float4 position : SV_POSITION;
-    float2 tex : TEXCOORD0;
-	float3 normal : TEXCOORD1;
-	float3 tangent : TEXCOORD2;
-	float3 binormal : TEXCOORD3;
-	float3 viewDirection : TEXCOORD4;
-};
-
-PixelInputType LightVertexShader(VertexInputType input)
-{
-	PixelInputType output;
+	PixelInput output;
 
 	float4 worldPosition;
 

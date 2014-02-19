@@ -20,10 +20,10 @@
 ================
 */
 ObjLoader::ObjLoader() :
-	m_vertices      (NULL),
-	m_texcoords     (NULL),
-	m_normals       (NULL),
-	m_faces         (NULL),
+	m_vertices      (nullptr),
+	m_texcoords     (nullptr),
+	m_normals       (nullptr),
+	m_faces         (nullptr),
 	m_vertexIndex   (0),
 	m_texcoordIndex (0),
 	m_normalIndex   (0),
@@ -49,13 +49,12 @@ ObjLoader::~ObjLoader()
 */
 bool ObjLoader::init( std::string filename )
 {
-	bool result;	
 	int vertexCount = 0;
 	int textureCount = 0;
 	int normalCount = 0;
 	int faceCount = 0;	
 
-	result = readFileCounts(filename, vertexCount, textureCount, normalCount, faceCount);
+	bool result = readFileCounts(filename, vertexCount, textureCount, normalCount, faceCount);
 	if (!result)
 	{
 		return false;
@@ -147,10 +146,10 @@ bool ObjLoader::readFileCounts( std::string filename, int& vertexCount, int& tex
 */
 bool ObjLoader::loadDataStructures( std::string filename, int vertexCount, int textureCount, int normalCount, int faceCount )
 {
-	m_vertices = new Vector[vertexCount];
-	m_texcoords = new Vector[textureCount];
-	m_normals = new Vector[normalCount];
-	m_faces = new Face[faceCount];
+	m_vertices.reset(new Vector[vertexCount]);
+	m_texcoords.reset(new Vector[textureCount]);
+	m_normals.reset(new Vector[normalCount]);
+	m_faces.reset(new Face[faceCount]);
 
 	char input;
 	char input2;
@@ -233,87 +232,9 @@ bool ObjLoader::loadDataStructures( std::string filename, int vertexCount, int t
 
 /*
 ================
- ObjLoader::shutdown
-================
-*/
-void ObjLoader::shutdown()
-{
-	delete[] m_vertices;
-	delete[] m_texcoords;
-	delete[] m_normals;
-	delete[] m_faces;
-}
-
-/*
-================
  ObjLoader::createMesh
 ================
 */
-Mesh* ObjLoader::createMesh( int& vertexCount )
-{
-	vertexCount = m_faceIndex * 3;
-	Mesh* mesh = new Mesh[vertexCount];
-	
-	int vIndex, tIndex, nIndex;
-	int m = 0;
-
-	for (int i = 0; i < m_faceIndex; ++i)
-	{
-		vIndex = m_faces[i].vIndex1 - 1;
-		tIndex = m_faces[i].tIndex1 - 1;
-		nIndex = m_faces[i].nIndex1 - 1;
-
-		mesh[m].x = m_vertices[vIndex].x;
-		mesh[m].y = m_vertices[vIndex].y;
-		mesh[m].z = m_vertices[vIndex].z;
-
-		mesh[m].tu = m_texcoords[tIndex].x;
-		mesh[m].tv = m_texcoords[tIndex].y;
-
-		mesh[m].nx = m_normals[nIndex].x;
-		mesh[m].ny = m_normals[nIndex].y;
-		mesh[m].nz = m_normals[nIndex].z;
-
-		++m;
-
-		vIndex = m_faces[i].vIndex2 - 1;
-		tIndex = m_faces[i].tIndex2 - 1;
-		nIndex = m_faces[i].nIndex2 - 1;
-
-		mesh[m].x = m_vertices[vIndex].x;
-		mesh[m].y = m_vertices[vIndex].y;
-		mesh[m].z = m_vertices[vIndex].z;
-
-		mesh[m].tu = m_texcoords[tIndex].x;
-		mesh[m].tv = m_texcoords[tIndex].y;
-
-		mesh[m].nx = m_normals[nIndex].x;
-		mesh[m].ny = m_normals[nIndex].y;
-		mesh[m].nz = m_normals[nIndex].z;
-
-		++m;
-
-		vIndex = m_faces[i].vIndex3 - 1;
-		tIndex = m_faces[i].tIndex3 - 1;
-		nIndex = m_faces[i].nIndex3 - 1;
-
-		mesh[m].x = m_vertices[vIndex].x;
-		mesh[m].y = m_vertices[vIndex].y;
-		mesh[m].z = m_vertices[vIndex].z;
-
-		mesh[m].tu = m_texcoords[tIndex].x;
-		mesh[m].tv = m_texcoords[tIndex].y;
-
-		mesh[m].nx = m_normals[nIndex].x;
-		mesh[m].ny = m_normals[nIndex].y;
-		mesh[m].nz = m_normals[nIndex].z;
-
-		++m;
-	}
-
-	return mesh;
-}
-
 void ObjLoader::createMesh( int& vertexCount, std::vector<Mesh>& mesh )
 {
 	vertexCount = m_faceIndex * 3;

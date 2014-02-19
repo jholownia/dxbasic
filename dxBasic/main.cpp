@@ -15,34 +15,17 @@
 
 /*
 ================
-
+ WinMain
 ================
 */
 int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in LPSTR lpCmdLine, __in int nShowCmd )
 {
-	App* app;
-	bool result;
-
-	// Create application object
-	app = new App;
-
-	if (!app)
-	{
-		return 0;	
-	}
-
-	// Run the application
-	result = app->init();
+	std::unique_ptr<App> app(new App);		
 	
-	if (result)
+	if (app->init())
 	{
 		app->run();
-	}
-
-	// Shutdown and clean up
-	app->shutdown();	
-	delete app;
-	app = NULL;
+	}	
 
 	return 0;
 }

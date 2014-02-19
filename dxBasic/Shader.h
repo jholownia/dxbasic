@@ -18,7 +18,9 @@
 #include <D3DX11async.h>
 #include <fstream>
 #include <vector>
+#include <wrl/client.h>
 
+using Microsoft::WRL::ComPtr;
 
 /*
 ================================
@@ -37,25 +39,24 @@ public:
 	Shader(void);	
 	~Shader(void);
 		
-	bool init(ID3D11Device* device, HWND hwnd);
-	void shutdown();
+	bool init(ID3D11Device* device, HWND hwnd);	
 	void render(ID3D11DeviceContext*, int, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, std::vector<ID3D11ShaderResourceView*>, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
 		
 private:
-	ID3D11VertexShader* m_vertexShader;
-	ID3D11PixelShader* m_pixelShader;
-	ID3D11InputLayout* m_layout;
-	ID3D11Buffer* m_matrixBuffer;
-	ID3D11SamplerState* m_samplerState;
-	ID3D11Buffer* m_cameraBuffer;
-	ID3D11Buffer* m_lightBuffer;
+	ComPtr<ID3D11VertexShader> m_vertexShader;
+	ComPtr<ID3D11PixelShader> m_pixelShader;
+	ComPtr<ID3D11InputLayout> m_layout;
+	ComPtr<ID3D11Buffer> m_matrixBuffer;
+	ComPtr<ID3D11SamplerState> m_samplerState;
+	ComPtr<ID3D11Buffer> m_cameraBuffer;
+	ComPtr<ID3D11Buffer> m_lightBuffer;
 	
-	bool initShader(ID3D11Device*, HWND, WCHAR*, WCHAR* );
-	void shutdownShader();
+	bool initShader(ID3D11Device*, HWND, WCHAR*, WCHAR* );	
 	void outputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR* );
 	bool setShaderParameters(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, std::vector<ID3D11ShaderResourceView*>, D3DXVECTOR3, D3DXVECTOR4, D3DXVECTOR4, D3DXVECTOR3, D3DXVECTOR4, float, float);
 	void renderShader(ID3D11DeviceContext*, int);
-
+	
+	// Constant Buffers
 	struct MatrixBuffer
 	{
 		D3DXMATRIX world;
@@ -68,7 +69,6 @@ private:
 		D3DXVECTOR3 cameraPostion;
 		float padding;
 	};
-	
 
 	struct LightBuffer
 	{

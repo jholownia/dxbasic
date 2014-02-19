@@ -14,14 +14,15 @@
 #pragma warning( disable : 4005 )
 
 // This should speed up build process
-#define NO_MINMAX
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 
-#include "scenemanager.h"
-#include "inputmanager.h"
-#include "position.h"
-
 #include <Windows.h>
+#include <memory>
+
+class SceneManager;
+class InputManager;
+class Position;
 
 
 /*
@@ -41,24 +42,22 @@ public:
 	~App(void);
 
 	bool init();
-	void shutdown();
 	void run();
 
-	LRESULT CALLBACK messageHandler(HWND, UINT, WPARAM, LPARAM);
+	LRESULT CALLBACK messageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 
 private:
 	LPCWSTR m_appName;    
 	HINSTANCE m_hinstance;
 	HWND m_hwnd;          
-	InputManager* m_input;
-	SceneManager* m_scene;
-	Position* m_cameraPosition;
-	Position* m_modelPosition;
+	std::unique_ptr<InputManager> m_input;
+	std::unique_ptr<SceneManager> m_scene;
+	std::unique_ptr<Position> m_cameraPosition;
+	std::unique_ptr<Position> m_modelPosition;
 	
-	bool frame();
-	void initializeWindows(int&, int&);
+	bool update();
+	void initializeWindows(int& width, int& height);
 	void shutdownWindows();
-
 };
 
 static App* g_appHandle = NULL;

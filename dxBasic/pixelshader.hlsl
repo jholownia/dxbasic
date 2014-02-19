@@ -1,30 +1,6 @@
-Texture2D shaderTextures[3];
-SamplerState samplerType;
+#include "cbuffers.hlsli"
 
-cbuffer LightBuffer
-{
-	float4 ambientColor;
-	float4 diffuseColor;
-	float3 lightDirection;
-	float padding1;
-	float4 specularColor;
-	float specularPower;
-	float specularIntensity;	
-	float padding2;
-	float padding3;
-}
-
-struct PixelInputType
-{
-    float4 position : SV_POSITION;
-    float2 tex : TEXCOORD0;
-	float3 normal : TEXCOORD1;
-	float3 tangent : TEXCOORD2;
-	float3 binormal : TEXCOORD3;
-	float3 viewDirection : TEXCOORD4;
-};
-
-float4 LightPixelShader(PixelInputType input) : SV_TARGET
+float4 LightPixelShader(PixelInput input) : SV_TARGET
 {
 	// Sample the pixel color from the texture using the sampler at this texture coordinate location.
 	float4 textureColor = shaderTextures[0].Sample(samplerType, input.tex);

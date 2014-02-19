@@ -10,6 +10,12 @@
 */
 
 #include "scenemanager.h"
+#include "D3DManager.h"
+#include "camera.h"
+#include "model.h"
+#include "shader.h"
+#include "light.h"
+#include "Config.h"
 
 /*
 ================
@@ -17,11 +23,11 @@
 ================
 */
 SceneManager::SceneManager(void) :
-	m_d3d	(NULL),
-	m_camera	(NULL),
-	m_model	(NULL),
-	m_shader	(NULL),
-	m_light	(NULL)
+	m_d3d	 (nullptr),
+	m_camera (nullptr),
+	m_model	 (nullptr),
+	m_shader (nullptr),
+	m_light	 (nullptr)
 {
 
 }
@@ -47,12 +53,7 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 {	
 	bool result;
 	
-	m_d3d = new D3DManager;
-
-	if (!m_d3d)
-	{
-		return false;
-	}
+	m_d3d.reset(new D3DManager);
 
 	result = m_d3d->init(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 
@@ -63,7 +64,8 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	}
 	
 	// Create camera
-	m_camera = new Camera;
+	m_camera.reset(new Camera);
+
 	// camera_->setPosition(0.0f, 2.0f, -5.0f);
 	// camera_->setRotation(20.0f, 0.0f, 0.0f);
 	m_camera->setPosition(0.0f, 0.0f, -5.0f);
@@ -72,7 +74,7 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	m_camera->getViewMatrix(baseViewMatrix);
 
 	// Create model
-	m_model = new Model;
+	m_model.reset(new Model);
 	result = m_model->init(m_d3d->getDevice(), "data/ball.obj", "data/earth_4k.jpg", "data/earth_normal.png", "data/earth_specular.jpg");
 	if (!result)
 	{
@@ -83,7 +85,7 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	m_model->setRotation(0.0f, 45.0f, 0.0f);
 
 	// Create shader
-	m_shader = new Shader;
+	m_shader.reset(new Shader);
 	result = m_shader->init(m_d3d->getDevice(), hwnd);
 	if (!result)
 	{
@@ -92,7 +94,7 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Light
-	m_light = new Light;
+	m_light.reset(new Light);
 	m_light->setAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	m_light->setDiffuseColor(1.0f, 1.0f, 0.8f, 1.0f);	
 	// light_->setDirection(-1.0f, 0.7f, 1.5f);
@@ -111,41 +113,13 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 
 /*
 ================
- SceneManager::shutdown
-================
-*/
-void SceneManager::shutdown()
-{
-	delete m_light;
-	m_light = NULL;
-
-	if (m_model)
-	{
-		m_model->shutdown();
-		delete m_model;
-		m_model = NULL;
-	}
-
-	delete m_camera;
-	m_camera = NULL;
-
-	if (m_d3d)
-	{
-		m_d3d->shutdown();
-		delete m_d3d;
-		m_d3d = NULL;
-	}
-}
-
-/*
-================
  SceneManager::frame
 
  This method is called every frame from App object
  and sets up all the variables before rendering.
 ================
 */
-bool SceneManager::frame()
+bool SceneManager::update()
 {			
 	// camera_->setPosition();
 	// camera_->setRotation();

@@ -14,16 +14,13 @@
 #pragma warning( disable : 4005 )
 
 #include <Windows.h>
-
-// Use forward declarations and move all this to the cpp file
-
-#include "Config.h"
-#include "D3DManager.h"
-#include "camera.h"
-#include "model.h"
-#include "shader.h"
-#include "light.h"
-
+#include <memory>
+ 
+class D3DManager;
+class Camera;
+class Model; 
+class Shader; 
+class Light;
 
 /*
 ================================
@@ -38,21 +35,20 @@
 class SceneManager
 {
 public:
-	SceneManager(void);
+	SceneManager();
 	SceneManager(SceneManager const&);
-	~SceneManager(void);
+	~SceneManager();
 
 	bool init(int, int, HWND);
-	void shutdown();
-	bool frame();
+	bool update();
 	bool render();
 
 private:	
-	D3DManager* m_d3d;
-	Camera* m_camera;
-	Model* m_model;
-	Shader* m_shader;
-	Light* m_light;
+	std::unique_ptr<D3DManager> m_d3d;
+	std::unique_ptr<Camera> m_camera;
+	std::unique_ptr<Model> m_model;
+	std::unique_ptr<Shader> m_shader;
+	std::unique_ptr<Light> m_light;
 	
 	void renderScene();
 };

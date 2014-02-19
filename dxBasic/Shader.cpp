@@ -18,13 +18,13 @@
 ================
 */
 Shader::Shader(void) :
-	m_vertexShader        (NULL),
-	m_pixelShader         (NULL),
-	m_layout              (NULL),
-	m_matrixBuffer        (NULL),
-	m_samplerState        (NULL),
-	m_cameraBuffer        (NULL),
-	m_lightBuffer         (NULL)
+	m_vertexShader        (nullptr),
+	m_pixelShader         (nullptr),
+	m_layout              (nullptr),
+	m_matrixBuffer        (nullptr),
+	m_samplerState        (nullptr),
+	m_cameraBuffer        (nullptr),
+	m_lightBuffer         (nullptr)
 {
 
 }
@@ -36,6 +36,7 @@ Shader::Shader(void) :
 */
 Shader::~Shader(void)
 {
+
 }
 
 /*
@@ -45,17 +46,7 @@ Shader::~Shader(void)
 */
 bool Shader::init( ID3D11Device* device, HWND hwnd )
 {
-	return initShader(device, hwnd, L"phong.vs", L"phong.ps" );
-}
-
-/*
-================
- Shader::shutdown
-================
-*/
-void Shader::shutdown()
-{
-	shutdownShader();
+	return initShader(device, hwnd, L"vertexshader.hlsl", L"pixelshader.hlsl" );
 }
 
 /*
@@ -268,79 +259,10 @@ bool Shader::initShader( ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCH
 	result = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
 	if (FAILED(result))
 	{
-		return false; /// !!!
+		return false;
 	}
-
-	
-	//// Get pointers to the three matrices inside the shader so we can update them from this class.
-	//worldMatrixPtr_ = effect_->GetVariableByName("worldMatrix")->AsMatrix();
-	//viewMatrixPtr_ = effect_->GetVariableByName("viewMatrix")->AsMatrix();
-	//projectionMatrixPtr_ = effect_->GetVariableByName("projectionMatrix")->AsMatrix();
-
-	//// Pointer to the texture resource inside the shader
-	//texturePrt_ = effect_->GetVariableByName("shaderTexture")->AsShaderResource();
-
-	//// Light direction, ambient and diffuse color
-	//lightDirectionPtr_ = effect_->GetVariableByName("lightDirection")->AsVector();
-	//ambientColorPtr_ = effect_->GetVariableByName("ambientColor")->AsVector();
-	//diffuseColorPtr_ = effect_->GetVariableByName("diffuseColor")->AsVector();
-
-	//// Specular components
-	//cameraPositionPtr_ = effect_->GetVariableByName("cameraPosition")->AsVector();
-	//specularColorPtr_ = effect_->GetVariableByName("specularColor")->AsVector();
-	//specularPowerPtr_ = effect_->GetVariableByName("specularPower")->AsScalar();
-	//specularIntensityPtr_ = effect_->GetVariableByName("specularIntensity")->AsScalar();
 
 	return true;
-}
-
-/*
-================
- Shader::shutdownShader
-================
-*/
-void Shader::shutdownShader()
-{
-	if (m_lightBuffer)
-	{
-		m_lightBuffer->Release();
-		m_lightBuffer = NULL;
-	}
-
-	if (m_cameraBuffer)
-	{
-		m_lightBuffer->Release();
-		m_lightBuffer = NULL;
-	}		
-	
-	if (m_samplerState)
-	{
-		m_samplerState->Release();
-		m_samplerState = NULL;
-	}
-	if (m_matrixBuffer)
-	{
-		m_matrixBuffer->Release();
-		m_matrixBuffer = NULL;
-	}
-	if (m_layout)
-	{
-		m_layout->Release();
-		m_layout = NULL;
-	}	
-	
-	if (m_pixelShader)
-	{
-		m_pixelShader->Release();
-		m_pixelShader = NULL;
-	}
-
-	if(m_vertexShader)
-	{
-		m_vertexShader->Release();
-		m_vertexShader = NULL;
-	}	
-	
 }
 
 /*
@@ -381,9 +303,9 @@ bool Shader::setShaderParameters( ID3D11DeviceContext* deviceContext, D3DXMATRIX
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBuffer* dataPtr;
-	CameraBuffer* dataPtr2;
-	LightBuffer* dataPtr3;
+	MatrixBuffer* pMatrixData;
+	CameraBuffer* pCameraData;
+	LightBuffer* pLightData;
 	unsigned int bufferNumber;
 
 	// Transpose the matrices to prepare them for the buffer
@@ -392,107 +314,74 @@ bool Shader::setShaderParameters( ID3D11DeviceContext* deviceContext, D3DXMATRIX
 	D3DXMatrixTranspose(&projectionMatrix, &projectionMatrix);
 
 	// Lock constant buffer so it can be written to
-	result = deviceContext->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(m_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
 	// Get a pointer to the data in the constant buffer
-	dataPtr = (MatrixBuffer*)mappedResource.pData;
+	pMatrixData = (MatrixBuffer*)mappedResource.pData;
 
 	// Copy the matrices into the constant buffer
-	dataPtr->world = worldMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projectionMatrix;
+	pMatrixData->world = worldMatrix;
+	pMatrixData->view = viewMatrix;
+	pMatrixData->projection = projectionMatrix;
 
 	// Unlock the constant buffer
-	deviceContext->Unmap(m_matrixBuffer, 0);
+	deviceContext->Unmap(m_matrixBuffer.Get(), 0);
 
 	// Set the position of the constant buffer in the vertex shader
 	bufferNumber = 0;
 
 	// Set the constant buffer in the vertex shader with the updated values
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, m_matrixBuffer.GetAddressOf());
 
 	// Set texture resource in the pixel shader
 	deviceContext->PSSetShaderResources(0, 3, &texturesArray[0]);
 
 	// Camera Buffer
-	result = deviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	dataPtr2 = (CameraBuffer*) mappedResource.pData;
-	dataPtr2->cameraPostion = cameraPosition;
-	dataPtr2->padding = 0.0f;
+	pCameraData = (CameraBuffer*) mappedResource.pData;
+	pCameraData->cameraPostion = cameraPosition;
+	pCameraData->padding = 0.0f;
 
-	deviceContext->Unmap(m_cameraBuffer, 0);
+	deviceContext->Unmap(m_cameraBuffer.Get(), 0);
 
 	bufferNumber = 1;
 
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_cameraBuffer);
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, m_cameraBuffer.GetAddressOf());
 
 	// Set shader texture resource in the pixel shader
 	// deviceContext->PSSetShaderResources(0, 1, &texturesArray);
 
 	// Light buffer
-	result = deviceContext->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	result = deviceContext->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
-	dataPtr3 = (LightBuffer*)mappedResource.pData;
-	dataPtr3->ambientColor = ambientColor;
-	dataPtr3->diffuseColor = diffuseColor;
-	dataPtr3->lightDirection = lightDirection;
-	dataPtr3->specularColor = specularColor;
-	dataPtr3->specularPower = specularPower;
-	dataPtr3->specularIntensity = specularIntensity;
-	/*dataPtr3->padding1 = 0.0f;
-	dataPtr3->padding2 = 0.0f;
-	dataPtr3->padding3 = 0.0f;*/
-
-	deviceContext->Unmap(m_lightBuffer, 0);
+	pLightData = (LightBuffer*)mappedResource.pData;
+	pLightData->ambientColor = ambientColor;
+	pLightData->diffuseColor = diffuseColor;
+	pLightData->lightDirection = lightDirection;
+	pLightData->specularColor = specularColor;
+	pLightData->specularPower = specularPower;
+	pLightData->specularIntensity = specularIntensity;
+	
+	deviceContext->Unmap(m_lightBuffer.Get(), 0);
 
 	bufferNumber = 0;
 
-	deviceContext->PSSetConstantBuffers(bufferNumber, 1, &m_lightBuffer);
+	deviceContext->PSSetConstantBuffers(bufferNumber, 1, m_lightBuffer.GetAddressOf());
 	
-	return true;
-	
-
-	//// Set the world matrix variable inside the shader.
-	//worldMatrixPtr_->SetMatrix((float*)&worldMatrix);
-
-	//// Set the view matrix variable inside the shader.
-	//viewMatrixPtr_->SetMatrix((float*)&viewMatrix);
-
-	//// Set the projection matrix variable inside the shader.
-	//projectionMatrixPtr_->SetMatrix((float*)&projectionMatrix);
-
-	//// Bind the texture
-	//texturePrt_->SetResource(texture);
-
-	//// Light
-	//lightDirectionPtr_->SetFloatVector((float *) &lightDirection);
-	//ambientColorPtr_->SetFloatVector((float *) &ambientColor);
-	//diffuseColorPtr_->SetFloatVector((float *) &diffuseColor);
-
-	//// Camera position
-	//cameraPositionPtr_->SetFloatVector((float *) &cameraPosition);
-
-	//// Specular color
-	//specularColorPtr_->SetFloatVector((float*) &specularColor);
-
-	//// Specular power
-	//specularPowerPtr_->SetFloat(specularPower);
-
-	//// Specular intensity
-	//specularIntensityPtr_->SetFloat(specularIntensity);
+	return true;	
 }
 
 /*
@@ -503,14 +392,14 @@ bool Shader::setShaderParameters( ID3D11DeviceContext* deviceContext, D3DXMATRIX
 void Shader::renderShader( ID3D11DeviceContext* deviceContext, int indexCount )
 {	
 	// Set the input layout.
-	deviceContext->IASetInputLayout(m_layout);
+	deviceContext->IASetInputLayout(m_layout.Get());
 
 	// Set vertex and pixel shaders which will be used for rendering this triangle
-	deviceContext->VSSetShader(m_vertexShader, NULL, 0);
-	deviceContext->PSSetShader(m_pixelShader, NULL, 0);
+	deviceContext->VSSetShader(m_vertexShader.Get(), NULL, 0);
+	deviceContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
 
 	// Set sampler state in the pixel shader
-	deviceContext->PSSetSamplers(0, 1, &m_samplerState);
+	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
 	// Render the triangle
 	deviceContext->DrawIndexed(indexCount, 0, 0);

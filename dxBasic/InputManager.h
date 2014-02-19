@@ -38,8 +38,7 @@ public:
 	InputManager(void);	
 	~InputManager(void);
 
-	bool init(HINSTANCE, HWND, int, int);
-	void shutdown();
+	bool init(HINSTANCE, HWND, int, int);	
 	bool update();
 
 	// Convenience methods

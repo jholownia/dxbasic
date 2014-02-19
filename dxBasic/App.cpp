@@ -12,6 +12,10 @@
 */
 
 #include "app.h"
+#include "scenemanager.h"
+#include "inputmanager.h"
+#include "position.h"
+
 
 /*
 ================
@@ -19,10 +23,10 @@
 ================
 */
 App::App(void) :
-	m_input			(NULL),
-	m_scene			(NULL),
-	m_cameraPosition	(NULL),
-	m_modelPosition	(NULL)
+	m_input			 (nullptr),
+	m_scene			 (nullptr),
+	m_cameraPosition (nullptr),
+	m_modelPosition  (nullptr)
 {
 
 }
@@ -34,7 +38,7 @@ App::App(void) :
 */
 App::~App(void)
 {
-	
+	shutdownWindows();
 }
 
 /*
@@ -54,7 +58,7 @@ bool App::init()
 	initializeWindows(screenWidth, screenHeight);
 
 	// Create input object
-	m_input = new InputManager;
+	m_input.reset(new InputManager);
 	if (!m_input)
 	{
 		return false;
@@ -68,7 +72,7 @@ bool App::init()
 	}
 
 	// Create scene
-	m_scene = new SceneManager;
+	m_scene.reset(new SceneManager);
 	if(!m_scene)
 	{
 		return false;
@@ -83,48 +87,16 @@ bool App::init()
 	return true;
 
 	// Camera position
-	m_cameraPosition = new Position;
+	m_cameraPosition.reset(new Position);
 	m_cameraPosition->setPosition(0.0f, 5.0f, 0.0f);
 	m_cameraPosition->setRotation(0.0f, 45.0f, 0.0f);
 
 	// Model position
-	m_modelPosition = new Position;
+	m_modelPosition.reset(new Position);
 	m_modelPosition->setPosition(10.0f, 1.0f, 10.0f);
 	m_modelPosition->setRotation(0.0f, 45.0f, 0.0f);
 
 	return true;
-}
-
-/*
-================
- App::shutdown
-
- Cleans up.
-================
-*/
-void App::shutdown()
-{	
-	delete m_modelPosition;
-	m_modelPosition = NULL;
-
-	delete m_cameraPosition;
-	m_cameraPosition = NULL;	
-	
-	if(m_scene)
-	{
-		m_scene->shutdown();
-		delete m_scene;
-		m_scene = NULL;
-	}
-
-	if(m_input)
-	{
-		m_input->shutdown();
-		delete m_input;
-		m_input = NULL;
-	}
-
-	shutdownWindows();
 }
 
 /*
@@ -161,7 +133,7 @@ void App::run()
 		else
 		{
 			// Process the frame
-			result = frame();
+			result = update();
 			
 			if (!result)
 			{
@@ -184,7 +156,7 @@ void App::run()
  Does all per frame processing.
 ================
 */
-bool App::frame()
+bool App::update()
 {
 	bool result;
 
@@ -195,7 +167,7 @@ bool App::frame()
 	}
 
 	// Pass parameters to scene manager
-	result = m_scene->frame();
+	result = m_scene->update();
 	if (!result)
 	{
 		return false;
@@ -222,18 +194,13 @@ LRESULT CALLBACK App::messageHandler( HWND hwnd, UINT umsg, WPARAM wparam, LPARA
 ================
 */
 void App::initializeWindows( int& screenWidth, int& screenHeight)
-{
-	WNDCLASSEX wc;
-	DEVMODE dmScreenSettings;
-	int posX;
-	int posY;
-		
+{		
 	g_appHandle = this;
-	m_hinstance = GetModuleHandle(NULL);
-		
+	m_hinstance = GetModuleHandle(NULL);		
 	m_appName = L"Tiger";
 
 	// Setup windows
+	WNDCLASSEX wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
@@ -255,9 +222,12 @@ void App::initializeWindows( int& screenWidth, int& screenHeight)
 	screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	// Setup the screen settings depending on whether it is running in full screen or in windowed mode.
+	int posX, posY;
+	
 	if(false)
 	{
 		// If full screen set the screen to maximum size of the users desktop and 32bit.
+		DEVMODE dmScreenSettings;		
 		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
 		dmScreenSettings.dmSize       = sizeof(dmScreenSettings);
 		dmScreenSettings.dmPelsWidth  = (unsigned long)screenWidth;
@@ -269,7 +239,8 @@ void App::initializeWindows( int& screenWidth, int& screenHeight)
 		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
 
 		// Set the position of the window to the top left corner.
-		posX = posY = 0;
+		posX = 0;
+		posY = 0;
 	}
 	else
 	{

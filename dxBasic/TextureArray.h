@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+
 /*
 ================================
  
@@ -35,8 +36,7 @@ public:
 	~TextureArray(void);
 
 	bool init(ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3);
-	void shutdown();
-
+	
 	const std::vector<ID3D11ShaderResourceView*>& getTextureArray() const;
 
 private:

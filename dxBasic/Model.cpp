@@ -24,7 +24,7 @@
 Model::Model(void) :
 	m_vertexBuffer (NULL),
 	m_indexBuffer  (NULL),
-	m_textureArray (NULL)
+	m_textureArray (nullptr)
 {
 
 }
@@ -87,17 +87,6 @@ bool Model::init( ID3D11Device* device, const std::string& meshFilename, const s
 
 /*
 ================
- Model::shutdown
-================
-*/
-void Model::shutdown()
-{
-	releaseTextures();
-	shutdownBuffers();	
-}
-
-/*
-================
  Model::render
 ================
 */
@@ -118,10 +107,10 @@ int Model::getIndexCount() const
 
 /*
 ================
- Model::getTexture
+ Model::getTextureArray
 ================
 */
-std::vector<ID3D11ShaderResourceView*> Model::getTextureArray()
+const std::vector<ID3D11ShaderResourceView*>& Model::getTextureArray() const
 {
 	return m_textureArray->getTextureArray();
 }
@@ -135,17 +124,11 @@ std::vector<ID3D11ShaderResourceView*> Model::getTextureArray()
 */
 bool Model::initBuffers( ID3D11Device* device )
 {
-	Vertex* vertices;
-	unsigned long* indices;
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	D3D11_BUFFER_DESC indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData;
-	D3D11_SUBRESOURCE_DATA indexData;
+	std::vector<Vertex> vertices(m_vertexCount);
+	std::vector<UINT32> indices(m_indexCount);
+	
 	HRESULT result;
-
-	vertices = new Vertex[m_vertexCount];
-	indices = new unsigned long[m_indexCount];
-
+	
 	for (int i = 0; i < m_vertexCount; i++)
 	{
 		vertices[i].position = D3DXVECTOR3(m_mesh[i].x, m_mesh[i].y, m_mesh[i].z);
@@ -158,6 +141,7 @@ bool Model::initBuffers( ID3D11Device* device )
 	}
 
 	// Set up the description of the vertex buffer.
+	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(Vertex) * m_vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -165,18 +149,20 @@ bool Model::initBuffers( ID3D11Device* device )
 	vertexBufferDesc.MiscFlags = 0;
 
 	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = vertices;
+	D3D11_SUBRESOURCE_DATA vertexData;
+	vertexData.pSysMem = &vertices[0];
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now finally create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
+	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_vertexBuffer.GetAddressOf());
 	if(FAILED(result))
 	{
 		return false;
 	}
 
 	// Set up the description of the index buffer.
+	D3D11_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -184,24 +170,18 @@ bool Model::initBuffers( ID3D11Device* device )
 	indexBufferDesc.MiscFlags = 0;
 
 	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = indices;
+	D3D11_SUBRESOURCE_DATA indexData;
+	indexData.pSysMem = &indices[0];
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &m_indexBuffer);
+	result = device->CreateBuffer(&indexBufferDesc, &indexData, m_indexBuffer.GetAddressOf());
 	if(FAILED(result))
 	{
 		return false;
 	}
-
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete [] vertices;
-	vertices = NULL;
-
-	delete [] indices;
-	indices = NULL;
-
+	
 	return true;
 }
 
@@ -218,29 +198,9 @@ void Model::renderBuffers( ID3D11DeviceContext* deviceContext )
 	stride = sizeof(Vertex);
 	offset = 0;
 
-	deviceContext->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
-
-/*
-================
- Model::shutdownBuffers
-================
-*/
-void Model::shutdownBuffers()
-{
-	if (m_indexBuffer)
-	{
-		m_indexBuffer->Release();
-		m_indexBuffer = NULL;
-	}
-
-	if (m_vertexBuffer)
-	{
-		m_vertexBuffer->Release();
-		m_vertexBuffer = NULL;
-	}
 }
 
 /*
@@ -250,25 +210,12 @@ void Model::shutdownBuffers()
 */
 bool Model::loadTextures( ID3D11Device* device, const std::string& filename1, const std::string& filename2, const std::string& filename3 )
 {
-	m_textureArray = new TextureArray;
+	m_textureArray.reset(new TextureArray);
 
 	return m_textureArray->init(device, filename1, filename2, filename3);
 }
 
-/*
-================
- Model::releaseTexture
-================
-*/
-void Model::releaseTextures()
-{
-	if (m_textureArray)
-	{
-		m_textureArray->shutdown();
-		delete m_textureArray;
-		m_textureArray = NULL;
-	}
-}
+
 
 void Model::CalculateTBNVectors()
 {
@@ -600,7 +547,6 @@ bool Model::loadMeshFromObj( const std::string& filename )
 	// m_mesh.assign(pMesh, pMesh + m_vertexCount);
 	// delete pMesh;
 	loader.createMesh(m_vertexCount, m_mesh);
-	loader.shutdown();
 
 	m_indexCount = m_vertexCount;
 

@@ -31,7 +31,25 @@ InputManager::InputManager(void) :
 */
 InputManager::~InputManager(void)
 {
+	if (mouse_)
+	{
+		mouse_->Unacquire();
+		mouse_->Release();
+		mouse_ = NULL;
+	}
 
+	if (keyboard_)
+	{
+		keyboard_->Unacquire();
+		keyboard_->Release();
+		keyboard_ = NULL;
+	}
+
+	if (directInput_)
+	{
+		directInput_->Release();
+		directInput_ = NULL;
+	}
 }
 
 /*
@@ -103,33 +121,6 @@ bool InputManager::init( HINSTANCE hinstance, HWND hwnd, int screenWidth, int sc
 	return true;
 }
 
-/*
-================
- InputManager::shutdown
-================
-*/
-void InputManager::shutdown()
-{
-	if (mouse_)
-	{
-		mouse_->Unacquire();
-		mouse_->Release();
-		mouse_ = NULL;
-	}
-
-	if (keyboard_)
-	{
-		keyboard_->Unacquire();
-		keyboard_->Release();
-		keyboard_ = NULL;
-	}
-
-	if (directInput_)
-	{
-		directInput_->Release();
-		directInput_ = NULL;
-	}
-}
 
 /*
 ================

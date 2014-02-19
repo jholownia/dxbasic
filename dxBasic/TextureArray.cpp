@@ -28,7 +28,11 @@ TextureArray::TextureArray(void)
 */
 TextureArray::~TextureArray(void)
 {
-
+	for ( auto texture : m_textures )
+	{
+		texture->Release();
+	}
+	m_textures.clear();
 }
 
 /*
@@ -61,20 +65,6 @@ bool TextureArray::init( ID3D11Device* device, const std::string& filename1, con
 	}
 
 	return true;
-}
-
-/*
-================
- Texture::shutdown
-================
-*/
-void TextureArray::shutdown()
-{
-	for ( auto texture : m_textures )
-	{
-		texture->Release();
-	}
-	m_textures.clear();
 }
 
 /*
