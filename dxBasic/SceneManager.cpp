@@ -62,6 +62,10 @@ bool SceneManager::init( int screenWidth, int screenHeight, HWND hwnd)
 		MessageBox(hwnd, L"Error initializing Direct3D", L"Error", MB_OK);
 		return false;
 	}
+
+	m_d3d->resetViewport(400, 800);
+	m_d3d->resetViewport(400, 600);
+	m_d3d->resetViewport(800, 300);
 	
 	// Create camera
 	m_camera.reset(new Camera);

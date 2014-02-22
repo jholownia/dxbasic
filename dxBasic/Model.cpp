@@ -22,8 +22,8 @@
 ================
 */
 Model::Model(void) :
-	m_vertexBuffer (NULL),
-	m_indexBuffer  (NULL),
+	m_vertexBuffer (nullptr),
+	m_indexBuffer  (nullptr),
 	m_textureArray (nullptr)
 {
 
@@ -191,12 +191,9 @@ bool Model::initBuffers( ID3D11Device* device )
 ================
 */
 void Model::renderBuffers( ID3D11DeviceContext* deviceContext )
-{
-	unsigned int stride;
-	unsigned int offset;
-
-	stride = sizeof(Vertex);
-	offset = 0;
+{	
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
 
 	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
 	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -296,10 +293,7 @@ void Model::CalculateTBNVectors()
 		D3DXVec3Cross(&normal, &tangent, &bitangent);	
 		D3DXVec3Normalize(&normal, &normal);
 				
-		// Smooth the normals
-		//D3DXMATRIX tangentSpaceMatrix(tangent.x, tangent.y, tangent.z, 0.0f, binormal.x, binormal.y, binormal.z, 0.0f, normal.x, normal.y, normal.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		//D3DXMatrixTranspose(&tangentSpaceMatrix, &tangentSpaceMatrix);
-		
+		// Smooth the normals (dirty)		
 		D3DXVECTOR3 normal1, normal2, normal3, tangent1, tangent2, tangent3, bitangent1, bitangent2, bitangent3;
 
 		normal1.x = m_mesh[index - 3].nx;
@@ -314,9 +308,9 @@ void Model::CalculateTBNVectors()
 		normal3.y = m_mesh[index - 1].ny;
 		normal3.z = m_mesh[index - 1].nz;
 
-		D3DXVECTOR3 axis;    // rotation axis	
-		D3DXVECTOR4 temp;    // temporary vector for rotation result
-		D3DXMATRIX rotation; // rotation matrix
+		D3DXVECTOR3 axis;   
+		D3DXVECTOR4 temp;   
+		D3DXMATRIX rotation;
 		float cosAngle, angle;
 
 		// Vertex 1
@@ -344,8 +338,6 @@ void Model::CalculateTBNVectors()
 		bitangent1.x = temp.x;
 		bitangent1.y = temp.y;
 		bitangent1.z = temp.z;
-
-		// do the same for vertices 2 and 3...
 		
 		// Vertex 2
 		cosAngle = D3DXVec3Dot(&normal, &normal2);
@@ -434,38 +426,7 @@ void Model::CalculateTBNVectors()
 		m_mesh[index - 3].tz = tangent1.z;
 		m_mesh[index - 3].bx = bitangent1.x;
 		m_mesh[index - 3].by = bitangent1.y;
-		m_mesh[index - 3].bz = bitangent1.z;
-		
-		//// Store the results back in mesh
-		//m_mesh[index - 1].nx = normal.x;
-		//m_mesh[index - 1].ny = normal.y;
-		//m_mesh[index - 1].nz = normal.z;
-		//m_mesh[index - 1].tx = tangent.x;
-		//m_mesh[index - 1].ty = tangent.y;
-		//m_mesh[index - 1].tz = tangent.z;
-		//m_mesh[index - 1].bx = bitangent.x;
-		//m_mesh[index - 1].by = bitangent.y;
-		//m_mesh[index - 1].bz = bitangent.z;
-
-		//m_mesh[index - 2].nx = normal.x;
-		//m_mesh[index - 2].ny = normal.y;
-		//m_mesh[index - 2].nz = normal.z;
-		//m_mesh[index - 2].tx = tangent.x;
-		//m_mesh[index - 2].ty = tangent.y;
-		//m_mesh[index - 2].tz = tangent.z;
-		//m_mesh[index - 2].bx = bitangent.x;
-		//m_mesh[index - 2].by = bitangent.y;
-		//m_mesh[index - 2].bz = bitangent.z;
-
-		//m_mesh[index - 3].nx = normal.x;
-		//m_mesh[index - 3].ny = normal.y;
-		//m_mesh[index - 3].nz = normal.z;
-		//m_mesh[index - 3].tx = tangent.x;
-		//m_mesh[index - 3].ty = tangent.y;
-		//m_mesh[index - 3].tz = tangent.z;
-		//m_mesh[index - 3].bx = bitangent.x;
-		//m_mesh[index - 3].by = bitangent.y;
-		//m_mesh[index - 3].bz = bitangent.z;
+		m_mesh[index - 3].bz = bitangent1.z;	
 	}
 }
 
@@ -543,28 +504,25 @@ bool Model::loadMeshFromObj( const std::string& filename )
 	
 	ObjLoader loader;
 	result = loader.init(filename);
-	// Mesh* pMesh = loader.createMesh(m_vertexCount);
-	// m_mesh.assign(pMesh, pMesh + m_vertexCount);
-	// delete pMesh;
 	loader.createMesh(m_vertexCount, m_mesh);
 
 	m_indexCount = m_vertexCount;
 
-	// Save mesh
-	/*std::ofstream ofs;
-	ofs.open("sphere.txt");
+// 	// Save mesh (for debugging)
+// 	std::ofstream ofs;
+// 	ofs.open("sphere.txt");
+// 
+// 	ofs << "Vertex Count: " << m_vertexCount;
+// 	ofs << "\n\n";
+// 	ofs << "Data:\n\n";
+// 
+// 	for (Mesh m : m_mesh)
+// 	{
+// 		ofs << m.x << " " << m.y << " " << m.z << " " << m.tu << " " << m.tv << " " << m.nx << " " << m.ny << " " << m.nz << "\n";
+// 	}
+// 
+// 	ofs.close();
 
-	ofs << "Vertex Count: " << m_vertexCount;
-	ofs << "\n\n";
-	ofs << "Data:\n\n";
-
-	for (Mesh m : m_mesh)
-	{
-		ofs << m.x << " " << m.y << " " << m.z << " " << m.tu << " " << m.tv << " " << m.nx << " " << m.ny << " " << m.nz << "\n";
-	}
-
-	ofs.close();
-*/
 	return result;
 }
 
